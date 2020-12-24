@@ -13,23 +13,23 @@ for i, x in scanFindings['scanSummary'].items():
             print(i)
             print(x)
         else:
-            os.system('cmd /c "date"')
+            exit(1)
     if i == "High":
         if x == 0:
             print(i)
             print(x)
         else:
-            os.system('cmd /c "date"')
+            exit(1)
     if i == "Medium":
         if x == 0:
             print(i)
             print(x)
         else:
-            os.system('cmd /c "date"')
+            exit(1)
     if i == "Low":
         if x > 0:
             print(i)
             print(x)
         else:
-            os.system('cmd /c "date"')
+            exit(1)
 print(latest_file)
