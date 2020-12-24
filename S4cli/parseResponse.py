@@ -13,23 +13,23 @@ for i, x in scanFindings['scanSummary'].items():
             print(i)
             print(x)
         else:
-            exit(1)
+            exit("Too Many Critical Bugs")
     if i == "High":
         if x == 0:
             print(i)
             print(x)
         else:
-            exit(1)
+            exit("Too Many High Bugs")
     if i == "Medium":
         if x == 0:
             print(i)
             print(x)
         else:
-            exit(1)
+            exit("Too Many Medium Bugs")
     if i == "Low":
         if x > 0:
             print(i)
             print(x)
         else:
-            exit(1)
+            exit("Too Many Low Bugs")
 print(latest_file)
