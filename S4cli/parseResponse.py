@@ -27,7 +27,7 @@ for i, x in scanFindings['scanSummary'].items():
         else:
             exit("Too Many Medium Bugs")
     if i == "Low":
-        if x == 0:
+        if x > 0:
             print(i)
             print(x)
         else:
