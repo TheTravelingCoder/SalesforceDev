@@ -13,23 +13,23 @@ for i, x in scanFindings['scanSummary'].items():
             print(i)
             print(x)
         else:
-            os.system('cmd /c "error("Build failed because of this and that..")"')
+            os.system('cmd /c "date"')
     if i == "High":
         if x == 0:
             print(i)
             print(x)
         else:
-            os.system('cmd /c "error("Build failed because of this and that..")"')
+            os.system('cmd /c "date"')
     if i == "Medium":
         if x == 0:
             print(i)
             print(x)
         else:
-            os.system('cmd /c "error("Build failed because of this and that..")"')
+            os.system('cmd /c "date"')
     if i == "Low":
         if x > 0:
             print(i)
             print(x)
         else:
-            os.system('cmd /c "error("Build failed because of this and that..")"')
+            os.system('cmd /c "date"')
 print(latest_file)
