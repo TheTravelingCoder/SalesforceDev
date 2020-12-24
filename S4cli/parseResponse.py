@@ -9,16 +9,27 @@ findings = open(latest_file)
 scanFindings = json.load(findings)
 for i, x in scanFindings['scanSummary'].items():
     if i == "Critical":
-        print(i)
-        print(x)
+        if x == 0:
+            print(i)
+            print(x)
+        else:
+            os.system('cmd /c "error("Build failed because of this and that..")"')
     if i == "High":
-        print(i)
-        print(x)
+        if x == 0:
+            print(i)
+            print(x)
+        else:
+            os.system('cmd /c "error("Build failed because of this and that..")"')
     if i == "Medium":
-        print(i)
-        print(x)
+        if x == 0:
+            print(i)
+            print(x)
+        else:
+            os.system('cmd /c "error("Build failed because of this and that..")"')
     if i == "Low":
-        print(i)
-        print(x)
-
+        if x > 0:
+            print(i)
+            print(x)
+        else:
+            os.system('cmd /c "error("Build failed because of this and that..")"')
 print(latest_file)
