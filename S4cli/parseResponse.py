@@ -7,7 +7,7 @@ latest_file = max(list_of_files, key=os.path.getctime)
 findings = open(latest_file)
 
 scanFindings = json.load(findings)
-for i, x in scanFindings['scanSumasdfasdfasdfasdmary'].items():
+for i, x in scanFindings['scanSummary'].items():
     if i == "Critical":
         print(i)
         print(x)
