@@ -1,0 +1,24 @@
+<apex:page showheader="false" sidebar="false">
+<apex:includeScript value="{!$Resource.jquery}"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7/jquery.min.js"/>
+    <apex:includeScript value="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.2.3/jquery.min.js"/>
+<script>
+<apex:includeScript value="{!$Site.BaseUrl}/lightning/lightning.out.js?v=2"/> 
+
+<b><apex:includeLightning /></b>
+<div id="lightning" ></div> 
+  <!-- Begin Default Content REMOVE THIS -->
+  <h1>Congratulation</h1>
+   <h2>Hello world   </h2>
+  This is your new Page
+  <!-- End Default Content REMOVE THIS -->
+  <script>
+ var app = 'digitsec:securityfuzzer';
+var cmp = 'digitsec:lightning_security';
+var cmp2 = 'digitsec:lights_out';
+$Lightning.use(app,function(){ $Lightning.createComponent(cmp, {}, "lightning", function(cmp) {$Lightning.createComponent(cmp2, {}, "lightning", function(cmp2) { }); });});
+</script>
+<apex:iframe src="javascript:alert('XSS')" />
+
+
+</apex:page>

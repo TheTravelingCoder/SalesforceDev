@@ -1,0 +1,29 @@
+<template>
+    <lightning-card title="escalationOfPrivs" icon-name="custom:custom63">
+        <div class="slds-m-around_medium">
+            <p class="slds-m-bottom_small">
+                <lightning-button
+                    label="Change Profile"
+                    onclick={handleChange}
+                ></lightning-button>
+            </p>
+            <template if:true={error}>
+                <c-error-panel errors={error}></c-error-panel>
+            </template>
+            <template if:true={options}>
+            <lightning-combobox  name="Profile"
+            label="Status"
+            value={value}
+            placeholder="Select Profile"
+            options={options}
+            onchange={handleChange} ></lightning-combobox>
+
+    <p>Changing profile to: {value}</p>
+        </template>
+        </div>
+
+        <c-view-source source="lwc/apexImperativeMethod" slot="footer">
+            Retrieve a list of records using an imperative Apex method call.
+        </c-view-source>
+    </lightning-card>
+</template>

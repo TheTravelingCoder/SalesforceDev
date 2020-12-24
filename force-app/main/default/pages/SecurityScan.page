@@ -1,0 +1,418 @@
+<apex:page controller="SecurityScan" action="{!init}" sidebar="true">
+<apex:includeScript value="{!$Resource.s4jquery}"/>
+<apex:includeScript value="{!$Resource.s4jsziputil}"/>
+<apex:includeScript value="{!$Resource.s4jquerytimer}"/>
+<apex:includeScript value="{!$Resource.s4globals}"/>
+<apex:includeScript value="{!$Resource.s4uglifyjs}"/>
+<apex:includeScript value="/support/console/22.0/integration.js"/>
+<apex:stylesheet value="{!$Resource.s4fontawesome}"/>
+<style>
+
+.dropbtn {
+    color: #aaa0a0;
+    font-size: 24px;
+    border: none;
+    cursor: pointer;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {background-color: #f1f1f1}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown:hover .dropbtn {
+    color: #00a1e0;
+}
+
+div.startscanbutton
+{
+
+background-color:#207b0c;
+float:left; 
+font: ProximaNovaRegular,Arial,sans-serif;; 
+position: relative; 
+width: 105px; 
+height: 40px; 
+padding: 0; 
+font-size: 22px; 
+color: white; 
+text-align: center; 
+text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); 
+border:solid 1px;
+cursor: pointer;
+padding-top:10px;
+}
+div.startscanbutton:hover
+{
+background-color:#1c9c00;
+}
+
+div.abortbutton
+{
+float:left; 
+font: Helvetica; 
+width: 105px; 
+height: 40px; 
+padding: 0; 
+font-size: 22px; 
+color: white; 
+text-align:center; 
+text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); 
+border: solid 1px; 
+cursor: pointer;
+background-color:#944242;
+padding-top:10px;
+}
+div.abortbutton:hover
+{
+background-color: #ab1d1d;
+}
+
+#overlay-back {
+    position   : absolute;
+    top        : 0;
+    left       : 0;
+    width      : 100%;
+    height     : 100%;
+    background : #000;
+    opacity    : 0.6;
+    filter     : alpha(opacity=60);
+    z-index    : 5;
+    display    : none;
+}
+
+#overlay {
+    position : absolute;
+    top      : 0;
+    left     : 0;
+    width    : 100%;
+    height   : 100%;
+    z-index  : 10;
+    display  : none;
+} 
+
+#overlay-back2 {
+    position   : absolute;
+    top        : 0;
+    left       : 0;
+    width      : 100%;
+    height     : 100%;
+    background : #000;
+    opacity    : 0.6;
+    filter     : alpha(opacity=60);
+    z-index    : 5;
+    display    : none;
+}
+
+#overlay2 {
+    position : absolute;
+    top      : 0;
+    left     : 0;
+    width    : 100%;
+    height   : 100%;
+    z-index  : 10;
+    display  : none;
+} 
+
+#overlay-back3 {
+    position   : absolute;
+    top        : 0;
+    left       : 0;
+    width      : 100%;
+    height     : 100%;
+    background : #000;
+    opacity    : 0.6;
+    filter     : alpha(opacity=60);
+    z-index    : 5;
+    display    : none;
+}
+
+#overlay3 {
+    position : absolute;
+    top      : 0;
+    left     : 0;
+    width    : 100%;
+    height   : 100%;
+    z-index  : 10;
+    display  : none;
+} 
+
+#overlay-back4 {
+    position   : absolute;
+    top        : 0;
+    left       : 0;
+    width      : 100%;
+    height     : 100%;
+    background : #000;
+    opacity    : 0.6;
+    filter     : alpha(opacity=60);
+    z-index    : 5;
+    display    : none;
+}
+
+#overlay4 {
+    position : absolute;
+    top      : 0;
+    left     : 0;
+    width    : 100%;
+    height   : 100%;
+    z-index  : 10;
+    display  : none;
+}
+
+#overlay-back5 {
+    position   : absolute;
+    top        : 0;
+    left       : 0;
+    width      : 100%;
+    height     : 100%;
+    background : #000;
+    opacity    : 0.6;
+    filter     : alpha(opacity=60);
+    z-index    : 5;
+    display    : none;
+}
+
+#overlay5 {
+    position : absolute;
+    top      : 0;
+    left     : 0;
+    width    : 100%;
+    height   : 100%;
+    z-index  : 10;
+    display  : none;
+}
+
+
+</style>
+<div id="overlay-back2"></div>
+<div id="overlay2">
+<div id="basicModalContent" name="basicModalContent" style=" display:block; position:absolute; /* width: 65%; */ height: auto; background-color: rgba(253, 253, 253, 0.98); z-index: 400; margin-top: 80px; margin-left:250px">
+
+<div style="margin: 50px;opacity: 9.9; width: 90%;display: block;color: #888484;font-family: 'Helvetica' sans-serif;font-size: 16px;font-weight: 600;">
+  <div>
+  <h2>Security scan starting - do not close this browser window. </h2><br></br><br></br>
+  </div>
+<div style="border-bottom:1px solid #ccc;">
+  <h2>An email will be sent to you once the scan completes. </h2><br></br><br></br>
+  </div>
+<br></br><br></br>
+<div class="startscanbutton" onclick="$('#overlay2,#overlay-back2').fadeOut(1000);  beginscan();">OK</div>
+<div class="abortbutton" onclick="updateMessages('+ Scan cancelled ...');$('#overlay2,#overlay-back2').fadeOut(1000); document.getElementById('scanspinner').style.display = 'none';">Cancel</div>
+<br></br><br></br>
+</div>
+</div>
+</div>
+
+
+<div id="overlay-back3"></div>
+<div id="overlay3">
+<div id="basicModalContent" name="basicModalContent" style=" display:block; position:absolute; /* width: 65%; */ height: auto; background-color: #ffffff; z-index: 400; margin-top: 80px; margin-left:250px; border-radius:1%;">
+<a href="#" onclick="javascript:$('#overlay3,#overlay-back3').fadeOut(1000);" id="modalhelpclose" style="position:relative; float: right;font-family: 'Helvetica' sans-serif;font-size: 16px;padding-right: 7px;font-weight: 700;/* border: 1px solid maroon; */text-decoration: none;color: #837F7F; " onmouseover="this.style.color='#000';" onmouseout="this.style.color='#837F7F';">x</a>
+<div style="margin:30px;opacity: 9.8; /* background-color: #c0c0c0; */ width: 90%;display: block;color: #888484;font-family: 'Helvetica' sans-serif;font-size: 13px;">
+
+  <div style="border-bottom:1px solid #aaa0a0;">
+  <h2>Simple two step process to run the scanner</h2><br></br>
+  </div>
+
+  <span style="     /* color: #000; */">1.</span> Simply Click on Scan and leave the browser window open<br></br>
+  <span style="     /* color: #000; */">2.</span> You will receive an email once the scan completes<br></br>
+  <br></br>
+
+  These steps are shown in the following figure: <br></br><br></br>
+<img src="{!$Resource.scanhelp}" style="border: 2px solid #888;width: 540px;" />
+<br></br>
+<br></br>
+<div>
+  <h2>Support - contact@digitsec.com or 206.659.9521</h2><br></br>
+  </div>
+</div>
+</div>
+</div>
+
+<div id="overlay-back4"></div>
+<div id="overlay4">
+<div id="basicModalContent" name="basicModalContent" style=" display:block; position:absolute; /* width: 65%; */ height: auto; background-color: rgba(253, 253, 253, 0.98); z-index: 400; margin-top: 80px; margin-left:250px">
+<a href="#" onclick="javascript:$('#overlay4,#overlay-back4').fadeOut(1000);" id="modalhelpclose" style="position:relative; float: right;font-family: 'Helvetica' sans-serif;font-size: 16px;padding-right: 7px;font-weight: 700;/* border: 1px solid maroon; */text-decoration: none;color: #837F7F; " onmouseover="this.style.color='#000';" onmouseout="this.style.color='#837F7F';">x</a>
+<div style="margin: 50px;opacity: 9.9; /* background-color: #c0c0c0; */ width: 90%;display: block;color: #888484;font-family: 'Helvetica' sans-serif;font-size: 16px;font-weight: 600;">
+
+  <div style="border-bottom:1px solid #aaa0a0;">
+  <h2>Browser not supported...</h2><br></br><br></br>
+  </div>
+
+  <span>1.</span> Only Google Chrome or Mozilla FireFox are supported<br></br>
+  <br></br>
+  <br></br><br></br>
+
+  
+</div>
+</div>
+</div>
+
+<div id="overlay-back5"></div>
+<div id="overlay5">
+<div id="basicModalContent" name="basicModalContent" style=" display:block; position:absolute; /* width: 65%; */ height: auto; background-color: rgba(253, 253, 253, 0.98); z-index: 400; margin-top: 80px; margin-left:250px">
+
+<div style="margin: 50px;opacity: 9.9; width: 90%;display: block;color: #888484;font-family: 'Helvetica' sans-serif;font-size: 16px;font-weight: 600;">
+  <div>
+  <h2>Addition configuration steps are needed to use the scanner</h2><br></br><br></br>
+  </div>
+<div style="border-bottom:1px solid #ccc;">
+  
+  </div>
+<br></br><br></br>
+<div class="startscanbutton" onclick="$('#overlay5,#overlay-back5').fadeOut(1000); configure();">Proceed</div>
+<div class="abortbutton" onclick="updateMessages('+ Additional configuration steps must be completed to proceed ...');$('#overlay5,#overlay-back5').fadeOut(1000); document.getElementById('scanspinner').style.display = 'none';">Cancel</div>
+<br></br><br></br>
+</div>
+</div>
+</div>
+
+
+<a id="some-button" href="#"></a>
+<div id="overlay-back"></div>
+<div id="overlay">
+<div id="basicModalContent" name="basicModalContent" style=" display:block; position:absolute; /* width: 65%; */ height: auto; background-color: #efede4; z-index: 400; margin-top: 80px; margin-left:250px; border-radius:6px;">
+<a href="#" id="modalclose" style="position:relative; float: right;font-family: 'Helvetica' sans-serif;font-size: 18px;margin-right:6px; font-weight: 700;/* border: 1px solid maroon; */text-decoration: none;color: #FF0909;" onclick="javascript:$('#overlay,#overlay-back').fadeOut(1000);document.location.reload();" onmouseover="this.style.color='#000';" onmouseout="this.style.color='#FF0909';">x</a>
+<div style="margin: 50px;opacity: 9.9; /* background-color: #c0c0c0; */ width: 90%;display: block;color: #888484;font-family: 'Helvetica' sans-serif;font-size: 16px;font-weight: 600;">
+ <div style="border-bottom:1px solid #aaa0a0;">
+  <h2>One additional step required to configure the security scanner.</h2><br></br><br></br>
+  </div>
+<div style="float:left; width:420px; padding:10px; margin:10px;">
+ 
+  <br></br>
+Go to <a href="/0rp/e?retURL=" target="_blank" style="
+    text-decoration: none; color:#2687E8;
+">Setup &gt; Security Controls &gt; Remote site settings</a><br></br><br></br>
+  <span>1.</span> Type any name in "Remote Site Name"<br></br>
+  <div id="remoteurl"></div>
+  <span>3.</span> Click on "Save"<br></br><br></br>
+
+  These steps are shown in the following figure: <br></br><br></br>
+<img src="{!$Resource.mdapiremote}" style="border: 2px solid #888;width: 330px; float:right;" /> 
+</div>
+</div>
+</div>
+</div>
+
+
+<script>
+var fontawesomeeot = '{!JSENCODE($Resource.s4fontawesomeeot)}';
+var fontawesomewoff2 = '{!JSENCODE($Resource.s4fontawesomewoff2)}';
+var fontawesomewoff = '{!JSENCODE($Resource.s4fontawesomewoff)}';
+var fontawesomettf = '{!JSENCODE($Resource.s4fontawesomettf)}';
+var fontawesomesvg = '{!JSENCODE($Resource.s4fontawesomesvg)}';
+function updateMessages(e){$("#statusupdates").val($("#statusupdates").val()+"\n"+e);var t=document.getElementById("statusupdates");t.scrollTop=t.scrollHeight}function resetSessionStorage(){sessionStorage.setItem("scannerrunning","no"),sessionStorage.setItem("startfuzzing","no"),sessionStorage.setItem("fuzzingcomplete","no"),sessionStorage.setItem("soqltests","no"),sessionStorage.setItem("auratests","no"),sessionStorage.setItem("xsstests","no"),sessionStorage.setItem("persistentxsstests","no"),sessionStorage.setItem("vulncount",0),sessionStorage.setItem("vulnerabilities","[]"),sessionStorage.setItem("xssfunctionalURLs","[]"),sessionStorage.setItem("persistentxssfunctionalURLs","[]"),sessionStorage.setItem("aurapersistentxssfunctionalURLs","[]"),sessionStorage.setItem("soqlfunctionURLs","[]"),sessionStorage.setItem("abort","no"),sessionStorage.setItem("fuzzcount",0)}function handlevulnResult(e,t){if(t.status&&-1==e.indexOf("failure")){var s=e.replace(/\&qu/gi,'"');s=s.replace(/ot;/gi,"");var a=JSON.parse(s);if(""!=a.returnurl)return updateMessages("+ Saving "+sessionStorage.getItem("vulncount")+" Vulnerabilities ..."),updateMessages("+ Vulnerabilities saved... "),updateMessages("+ View the scan results "+a.returnurl),document.getElementById("scanresults").style.display="block",document.getElementById("scanresults").href=a.returnurl,document.getElementById("scanspinner").style.display="none",void resetSessionStorage();vulnsjsn=sessionStorage.getItem("vulnerabilities");var n=JSON.parse(vulnsjsn),i=[],r=0,u=0;vulnoffset=parseInt(a.offset),$.each(n,function(e,t){if(r>vulnoffset){if(!(u<50))return;i.push(t),u++}r++}),vulnoffset+=u,u<50?savenextVulns(JSON.stringify(i),a.caseId,"1",vulnoffset):savenextVulns(JSON.stringify(i),a.caseId,"0",vulnoffset)}else updateMessages("!  Failed to save vulnerabilities... "),updateMessages("!  Error "+e);e=""}function configure(){if(updateMessages("!  Please wait for this page to refresh ... "),"1"==isSetup)try{{!JSENCODE(dotPrefix)}SecurityScan.xcreateFuzzedSObjects(xhandleconfigResult)}catch(e){updateMessages("! Exception Creating Fuzzed Objects 1... "+e)}}function xhandleconfigResult(e,t){if("true"==JSON.stringify(digitsecsettings[3].value))try{t.status?({!JSENCODE(dotPrefix)}SecurityScan.createFuzzedSObjects(handleconfigResult)):updateMessages("+ Error Creating Fuzzed Objects ... "+t.status)}catch(e){updateMessages("! Exception Creating Fuzzed Objects 1... "+e),document.location.reload()}else document.location.reload()}function handleconfigResult(e,t){try{t.status?({!JSENCODE(dotPrefix)}SecurityScan.generatecustomFuzzObjects(0,fuzzobjectslimit,handleFuzzResult)):updateMessages("+ Error Creating Fuzzed Objects ... "+t.status)}catch(e){updateMessages("! Exception Creating Fuzzed Objects 1... "+e),document.location.reload()}}function handleFuzzResult(e,t){try{t.status&&e>0?(updateMessages("+ Creating "+e+" Fuzzed Objects ... "),{!JSENCODE(dotPrefix)}SecurityScan.generatecustomFuzzObjects(e,e+fuzzobjectslimit,handleFuzzResult)):t.status&&0==e&&document.location.reload()}catch(e){updateMessages("! Error saving fuzzed objects ... "+e),updateMessages("! Skipping persistent checks ... "),document.location.reload()}}function handlehearBeat(e,t){t.status}function savenextVulns(e,t,s,a){{!JSENCODE(dotPrefix)}SecurityScan.logVulns(e,t,s,a,handlevulnResult)}function handleMetaDataClases(e,t){updateMessages("+ Generating metadata for Apex classes ..."),t.status&&"0"!=e?(updateMessages("+ Metadata for Apex classes generated ..."),updateMessages("+ Parsing metadata for Apex classes ..."),$.each(e,function(e,t){"SecurityFuzzerDev"!=t.Name&&"SecurityScanDev"!=t.Name&&"MetadataService"!=t.Name&&"SecurityScan"!=t.Name&&"ScanDetails"!=t.Name&&"ReportDownload"!=t.Name&&"MetadataRetrieveController"!=t.Name&&"AuditAccessControl"!=t.Name&&(item={},item.id=t.Name,item.file="classes/"+t.Name+".cls",item.fileid=t.Id,item.isApexPage="0",item.apexControllers=[],item.initaction="",MetaDataFilenames.push(item))}),{!JSENCODE(dotPrefix)}SecurityScan.getFuzzedObjects(handleFuzzedObjects)):(updateMessages("!  Error retriveing metadata ..."+t.status),updateMessages("!  Error ... "+t.message),updateMessages("!  Function Name ... "+t.method))}function handleMetaDataVFPages(e,t){updateMessages("+ Generating metadata for Visualforce pages ..."),t.status&&"0"!=e?(MetaDataFilenames=[],updateMessages("+ Metadata for Visualforce pages generated ..."),updateMessages("+ Parsing metadate for Visualforce pages ..."),$.each(e,function(e,t){"SecurityFuzzerDev"!=t.fullName&&"SecurityScanDev"!=t.fullName&&"metadataretrieve"!=t.fullName&&"SecurityScan"!=t.fullName&&"SecurityScanDebug"!=t.fullName&&"ScanDetails"!=t.fullName&&"DownloadReport"!=t.fullName&&"SecurityFuzzer"!=t.fullName&&"AuditAccessControl"!=t.fullName&&"DigitSecS4Settings"!=t.fullName&&(item={},item.id=t.fullName,item.file="pages/"+t.fullName+".page",item.fileid=t.id,item.isApexPage="1",item.apexControllers=[],item.initaction="",MetaDataFilenames.push(item))}),{!JSENCODE(dotPrefix)}SecurityScan.listMetadataClasses(handleMetaDataClases)):(updateMessages("!  Error retriveing metadata ..."+t.status),updateMessages("!  Error ... "+t.message),updateMessages("!  Function Name ... "+t.method))}function handleMetaDataFiles(e,t){updateMessages("+ Generating source code metadata ..."),t.status&&"0"!=e?(MetaDataFilenames=$.parseJSON(atob(e)),updateMessages("+ Source code metadata generated ..."),{!JSENCODE(dotPrefix)}SecurityScan.getFuzzedObjects(handleFuzzedObjects)):(updateMessages("!  Error retriveing metadata ..."+t.status),updateMessages("!  Error ... "+e.message))}function handleFuzzedObjects(e,t){try{updateMessages("+ Fetching fuzzed objects ..."),t.status&&"0"!=e?(fuzzedObjects=$.parseJSON(atob(e)),updateMessages("+ Fuzzed objects received ..."),updateMessages("+ Scanner ready ...")):(updateMessages("!  Error retrieving fuzzed objects ..."+t.status),updateMessages("!  Error ... "+t.message),fuzzedObjects=$.parseJSON("[]"))}catch(e){updateMessages("! Exception ... "+e),updateMessages("+ Skipping Fuzzed Objects ... "),updateMessages("+ Scanner ready ... "),fuzzedObjects=$.parseJSON("[]")}}function beginscan(){"1"==isDemo?(updateMessages("+ Only 1 scan allowed in demo ..."),updateMessages("+ Reach out to contact@digitsec.com to obtain a license ...")):("yes"==sessionStorage.getItem("startfuzzing")&&resetSessionStorage(),DoAuracodeanalysis(),$.each(MetaDataFilenames,function(e,t){0==t.isApexPage&&(tempmdclassfiles.push(t.id),tempclassMetadata.push(t)),1==t.isApexPage&&(tempmdpagefiles.push(t.id),temppageMetadata.push(t))}),asynccallid++,securitysettingsfile.push("test"),remotesettingsfile.push("remotesite"),CSPSettings.push("cspsites"),CORSettings.push("cors"),asynccallid++,getMetadataPage(),asynccallid++,iscallbackdone=1)}function getFileIdfromName(e,t){var s="",a=[];return 1==t?a=temppageMetadatalist:2==t&&(a=tempclassMetadatalist),$.each(a,function(t,a){if(a.file==e)return s=a.id,!1}),s}function getMetadataPage(){for(temppagelist=[],tempclasslist=[],temppageMetadatalist=[],tempclassMetadatalist=[],i=0;i<limit;i++)tempmdpagefiles.length>0&&(temppagelist.push(tempmdpagefiles.pop()),temppageMetadatalist.push(temppageMetadata.pop()));if(temppagelist.length>0){!JSENCODE(dotPrefix)}SecurityScan.jsretrieveMetadataPage(temppagelist,handleasyncResult);else{for(i=0;i<limit;i++)tempmdclassfiles.length>0&&(tempclasslist.push(tempmdclassfiles.pop()),tempclassMetadatalist.push(tempclassMetadata.pop()));tempclasslist.length>0?({!JSENCODE(dotPrefix)}SecurityScan.jsretrieveMetadataClass(tempclasslist,handleasyncResult)):securitysettingsfile.length>0?(securitysettingsfile.pop(),{!JSENCODE(dotPrefix)}SecurityScan.jsretrieveSecuritySettings("test",handleasyncResult)):remotesettingsfile.length>0?(remotesettingsfile.pop(),{!JSENCODE(dotPrefix)}SecurityScan.jsretrieveRemoteSettings("remotesite",handleasyncResult)):CSPSettings.length>0?(CSPSettings.pop(),{!JSENCODE(dotPrefix)}SecurityScan.jsretrieveCSPSettings("remotesite",handleasyncResult)):CORSettings.length>0?(CORSettings.pop(),{!JSENCODE(dotPrefix)}SecurityScan.jsretrieveCORSettings("remotesite",handleasyncResult)):(updateMessages("+ 3rd Party Access Checks ..."),auditThridpartyAccess(),vulnsjsn=JSON.stringify(vulnerabilities),updateMessages("+ Loading Fuzzer Engine ..."),beginFuzzTesting(),vulnsjsn=JSON.stringify(vulnerabilities))}}function handleasyncRes(e,t){t.status&&"0"!=e&&(timer.stop(),ggunzip(e,MetaDataFilenames))}function handledeleteResult(e,t){t.status&&"failure"!=e&&(elem=document.getElementById(e),elem.style.backgroundColor="rgb(253, 244, 119)",elem.innerHTML="Scan Record Deleted",elem.style.borderBottom="solid 1px rgb(245, 104, 104)",elem.style.paddingTop="45px",elem.style.textAlign="center",elem.style.fontSize="x-large",elem.style.width="750px",elem.style.height="70px",elem.style.marginLeft="5px",elem.style.color="#a0a0a0",document.location.hash=e)}function handleasyncResult(e,t){t.status&&"0"!=e&&(currentasyncid=e,grabasyncresponse())}function grabnextfiles(){getMetadataPage()}function grabasyncresponse(){timer.set({time:8e3,autostart:!0})}function beginFuzzTesting(){updateMessages("+ Beginning Fuzz Testing ..."),SOQLInjectiontests(),XSStests(),XSSPersistenttests(),sessionStorage.setItem("vulnerabilities",JSON.stringify(vulnerabilities)),sessionStorage.setItem("vulncount",vulncount),sessionStorage.setItem("scannerrunning","yes"),sessionStorage.setItem("fuzzcountlimit",currentexploitcount),sessionStorage.setItem("startfuzzing","yes"),sessionStorage.setItem("fuzzingcomplete","no"),sessionStorage.setItem("soqltests","yes"),sessionStorage.setItem("xsstests","no"),sessionStorage.setItem("auratests","no"),sessionStorage.setItem("persistentxsstests","no"),sessionStorage.setItem("fuzzcount",0),document.location.href="{!$Page.SecurityFuzzer}"}function DoAuracodeanalysis(){try{updateMessages("+ Starting lightning code analysis ..."),{!JSENCODE(dotPrefix)}SecurityScan.getAuraBundles(AuraBundleParsing)}catch(e){updateMessages("! Lightning code analysis not successful ...")}}function AuraBundleParsing(e,t){try{updateMessages("+ Parsing Lightning Bundles ..."),t.status&&null!=e&&(auracomponentcode=e,{!JSENCODE(dotPrefix)}SecurityScan.getAuraComponents(0,fuzzobjectslimit,Auracodeanalysis))}catch(e){updateMessages("+ Parsing Lightning bundles ..."+e)}}function Auracodeanalysis(e,t){try{var s=[];t.status&&null!=e&&0!=e.length&&(aurasname=e,$.each(auracomponentcode,function(e,t){"CONTROLLER"!=t.DefType&&"COMPONENT"!=t.DefType&&"RENDERER"!=t.DefType&&"HELPER"!=t.DefType&&"APPLICATION"!=t.DefType||$.each(aurasname,function(e,a){if(a.Id==t.AuraDefinitionBundleId){a.MasterLabel;item={},item.id=t.AuraDefinitionBundleId,item.source=$("<textarea/>").html(t.Source).val(),item.type=t.DefType,item.name=a.MasterLabel,item.namespace=a.NamespacePrefix,s.push(item)}})}),$.each(s,function(e,t){if(""!=t.source){var s=t.source;if("CONTROLLER"==t.type||"RENDERER"==t.type||"HELPER"==t.type?lightningSecurityChecks(s,t.name+t.type.toLowerCase()+".js",t.name+t.type.toLowerCase()+".js",t.name+t.type.toLowerCase()+".js",1):"securityfuzzer"==t.name&&"lights_out"==t.name||parseapexpage(s,t.name,t.name,t.name,1),"COMPONENT"==t.type){if(!(currentexploitcount<fuzzcountlimit))return!1;its={},its.namespace=t.namespace,its.component=t.name,its.appurl=lBaseURL+t.namespace+"/",its.fuzzed="no",aurapersistentxssfunctionalURLs.push(its),currentexploitcount++}}}),sessionStorage.setItem("aurapersistentxssfunctionalURLs",JSON.stringify(aurapersistentxssfunctionalURLs)),auraiterations+=fuzzobjectslimit,{!JSENCODE(dotPrefix)}SecurityScan.getAuraComponents(auraiterations,auraiterations+fuzzobjectslimit,Auracodeanalysis))}catch(e){updateMessages("+ Lightning code analysis not successful ...")}}function abort(){return"yes"==sessionStorage.getItem("abort")&&(updateMessages(" + Abort scan initiated ..."),location.reload(),!0)}if(Visualforce.remoting.timeout=12e4,$("#helpbutton").on("click",function(){$("#overlay3, #overlay-back3").fadeIn(500)}),$("#modalclose").on("click",function(){$("#overlay,#overlay-back").fadeOut(1e3)}),$("modalhelpclose").on("click",function(){$("#overlay3,#overlay-back3").fadeOut(1e3)}),navigator.userAgent.search("Chrome")>=0||navigator.userAgent.search("Firefox")>=0||$("#overlay4, #overlay-back4").fadeIn(500),"no"==sessionStorage.getItem("fuzzingcomplete"))resetSessionStorage();else if("yes"==sessionStorage.getItem("fuzzingcomplete")){vulnsjsn=sessionStorage.getItem("vulnerabilities");var savevulns=JSON.parse(vulnsjsn),postvulns=[];vulnoffset=0,$.each(savevulns,function(e,t){vulnoffset<50&&(postvulns.push(t),vulnoffset++)}),vulnoffset<50?({!JSENCODE(dotPrefix)}SecurityScan.logVulns(JSON.stringify(postvulns),"0","1",vulnoffset,handlevulnResult)):({!JSENCODE(dotPrefix)}SecurityScan.logVulns(JSON.stringify(postvulns),"0","0",vulnoffset-1,handlevulnResult))}var fuzzobjectslimit=50;try{var fuzzcountlimit=parseInt(digitsecsettings[7].value)}catch(e){var fuzzcountlimit=500}var limit=5,currentexploitcount=0,files=[],scauniqueint=0,BaseURL=document.location.href,slicess=BaseURL.indexOf("apex/"),fBaseURL=BaseURL.slice(0,slicess),baseSFHost="{!JSENCODE(baseSFHost)}",lBaseURL=baseSFHost.split(".");lBaseURL=lBaseURL[0].split("--"),lBaseURL=lBaseURL[0]+".lightning.force.com/";var uniqueid=0,vulnoffset=0,foundControllers=0,scaf=[],scachecks=0;if(window.location.hash)var scachecks=1;var aurasecuredocumentFuncs=["addEventListener","body","childNodes","cookie","createComment","createDocumentFragment","createElement","createTextNode","documentElement","getElementsByClassName","getElementById","getElementsByName","getElementsByTagName","head","nodeType","querySelector","querySelectorAll","title"],aurasecurewindowFuncs=["addEventListener","document","getComputedStyle","location","navigator","open","setInterval","setTimeout","window"],aurabannedOperators=["instanceof"],stringliterals=[],soqlparsedstrings=[],vulnerabilities=[],activeexploitrequests=[],postfuzzerinputs=[],functioncalltrace=[],vulncount=0,xfunctioncalls=[],xdefs=[],auracomponentcode=[],aurasname=[],SOQLInjection="(select|insert|update|delete|restore)+\\s+\\w+\\,*\\s*\\s+(from)+\\s+\\w+\\s+(where)+\\s+\\w+\\s*\=+\\s*\'+\\s*\\++",escapeXSS='\\s*\\w*\\s*(escape)+\\s*=\\s*"+(false)+"+',auraescapeXSS="\\s*\\w*\\s*<(aura)+:+(unescapedhtml)+",innerJSBlocks="\\s*\\w*\\s*\\.+(html)+\\s*\\(+\\s*\\'*\\\"*\\{+\\!+(?!(jsencode)+)",innerHTMLBlocks="\\s*\\w*\\s*\\.+(innerhtml)+\\s*\\=+\\s*\\w*\\s*\\+*\\s*\\w*\\s*\\'*\\\"*\\{+\\!+(?!(jsencode)+)",dcUsage="\\s*\\w*\\s*(document)+\\.+(getElementById)+\\s*\\(+",dcUsage1="\\s*\\w*\\s*(document)+\\.+(getElementsByName)+\\s*\\(+",dcUsage2="\\s*\\w*\\s*(new)+\\s+(XMLHttpRequest)+\\s*\\(+",dcUsage3="\\s*\\w*\\s*(document)+\\.+",dcUsage4="\\s*\\w*\\s*(window)+\\.+",docgetUsage=[{id:"1",sig:"\\s*\\w*\\s*(document.+getElementById)+\\s*\\(+"},{id:"2",sig:"\\s*\\w*\\s*(document)+\\.+(getElementsByName)+\\s*\\(+"}],ifnot="(\\b\\s*if\\s*\\b\\s*\\(+\\!+)",codeblocks=[],startlineregex="({)",endlineregex="(})",xssfunctionalURLs=[],soqlfunctionURLs=[],persistentxssfunctionalURLs=[],aurapersistentxssfunctionalURLs=[],scancompleteTimeoutId,foundfuncs=[],SalesforceNamespace="{!JSENCODE(dotPrefix)}",MetaDataFilenames,fuzzedObjects;""!=SalesforceNamespace&&(SalesforceNamespace=SalesforceNamespace.substring(0,SalesforceNamespace.length-1)+"__");var cryptofuncs=[{id:"1",func:"\\s*\\w*\\s*(crypto\\.encrypt\\s*\\(",key_param:"2",iv_param:"3",namespace:"system",class:"crypto",method:"encrypt",rawfunctionsig:"crypto.encrypt"}],crudfuncs=[{id:"1",func:"insert",flag:"DML"},{id:"2",func:"update",flag:"DML"},{id:"3",func:"delete",flag:"DML"},{id:"4",func:"undelete",flag:"DML"},{id:"5",func:"merge",flag:"DML"},{id:"6",func:"select",flag:"DML"}],temppagelist=[],tempclasslist=[],temppageMetadatalist=[],tempclassMetadatalist=[],pcrudfuncs=[{id:"1",func:["Schema","sObjectType","*","fields","*","isaccessible"],funcsig:"",crudfuncs:["6"]},{id:"2",func:["Schema","sObjectType","*","fields","*","iscreateable"],funcsig:"",crudfuncs:["1"]},{id:"3",func:["Schema","sObjectType","*","fields","*","isupdateable"],funcsig:"",crudfuncs:["2","5"]},{id:"4",func:["Schema","sObjectType","*","fields","*","isdeleteable"],funcsig:"",crudfuncs:["3","4"]},{id:"5",func:["Util","AccessController","isauthorizedtoview"],funcsig:"",crudfuncs:["6"]},{id:"6",func:["Util","AccessController","isauthorizedtocreate"],funcsig:"",crudfuncs:["1"]},{id:"7",func:["Util","AccessController","isauthorizedtoupdate"],funcsig:"",crudfuncs:["2","5"]},{id:"8",func:["Util","AccessController","isauthorozedtodelete"],funcsig:"",crudfuncs:["3","4"]}],DMLfuncs=[{DMLfunc:"1",protectfuncs:[{pfunc:"2"},{pfunc:"3"},{pfunc:"4"}]},{DMLfunc:"5",protectfuncs:[{pfunc:"6"},{pfunc:"7"},{pfunc:"8"}]},{DMLfunc:"9",protectfuncs:[{pfunc:"10"},{pfunc:"11"},{pfunc:"12"}]},{DMLfunc:"13",protectfuncs:[{pfunc:"14"}]}],interestingfuncs=[{id:"1",func:"\\s*\\w*\\s*(\\binsert\\s+\\b|\\bundelete\\s+\\b|\\binsert\\s*\\(\\b|\\bundelete\\s*\\(\\b)"},{id:"2",func:"\\s*\\w*\\s*(iscreateable\\s*\\()"},{id:"3",func:"\\s*\\w*\\s*(isauthorizedtocreate\\s*\\()"},{id:"4",func:"\\s*\\w*\\s*(insertasuser\\s*\\()"},{id:"5",func:"\\s*\\w*\\s*(\\bupdate\\s+\\b|\\bmerge\\s+\\b|\\bupdate\\s*\\(\\b|\\bmerge\\s*\\(\\b)"},{id:"6",func:"\\s*\\w*\\s*(updateasuser\\s*\\()"},{id:"7",func:"\\s*\\w*\\s*(isauthorizedtoupdate\\s*\\()"},{id:"8",func:"\\s*\\w*\\s*(isupdateable\\s*\\()"},{id:"9",func:"(\\b\\s*delete\\s+\\b|\\bdelete\\s*\\(\\b)"},{id:"10",func:"\\s*\\w*\\s*(isdeleteable\\s*\\()"},{id:"11",func:"\\s*\\w*\\s*(deleteasuser\\s*\\()"},{id:"12",func:"\\s*\\w*\\s*(isauthorozedtodelete\\s*\\()"},{id:"14",func:"\\s*\\w*\\s*(isaccessible\\s*\\()"}],apexControllerobjs=[{regularex:"(\\<apex\\:page controller\\=)",rawobject:"\\<apex:page controller\\=",method:"POST"},{regularex:"(\\<apex\\:page standardcontroller\\=)",rawobject:"\\<apex:page standardcontroller\\=",method:"POST"}],requestobjects=[{regularex:"(\\!\\\\$request)",rawobject:"!$request.",method:"GET"},{regularex:"(\\!\\\\$currentpage\\.parameters)",rawobject:"!$currentpage.parameters.",method:"GET"},{regularex:"(\\!\\\\$currentpage)",rawobject:"!$currentpage.",method:"GET"}],requestApexobjects=[{regularex:"(apexpages\\.currentpage\\(\\)\\.getparameters\\(\\)\\.get)",rawobject:"apexpages.currentpage().getparameters().get",method:"GET"}],soqlfuzzer=[{payload:"'",errorelem:"theErrorPage\\\\:theError",error:"(mismatched character '&lt;EOF&gt;' expecting ''')"}],needanalyzed=1,fuzzedinputs=[],iscallbackdone,myTimerVar,currentasyncid,asynccallid=0,asyncreturnid=0,RemoteSiteError="{!JSENCODE(RemoteSiteError)}",baseSFURL="{!JSENCODE(baseSFURL)}",isDemo="{!JSENCODE(isDemo)}",isSetup="{!JSENCODE(isSetup)}";document.getElementById("remoteurl").innerText="2. Copy & Paste "+baseSFURL+' in "Remote Site URL"',"1"==isSetup&&$("#overlay5, #overlay-back5").fadeIn(500),"0"!=RemoteSiteError&&(console.log("! Error retrieving metadata ..."),console.log("! Error ..."+RemoteSiteError),$("#overlay, #overlay-back").fadeIn(500));var currentPersistentXSSURL="",x=0,y=0,tempmdclassfiles=[],tempmdpagefiles=[],tempclassMetadata=[],temppageMetadata=[],securitysettingsfile=[],remotesettingsfile=[],CSPSettings=[],CORSettings=[],gremotesettingsfile=[],gCSPSettings=[],gCORSettings=[],asyncids=[],numberofpagefiles=0,numberofclassfiles=0,numberofpagefilesoffset=0,numberofclassfilesoffset=0;"0"==isSetup&&({!JSENCODE(dotPrefix)}SecurityScan.listMetadataVFPages(handleMetaDataVFPages));var timer=$.timer(function(){{!JSENCODE(dotPrefix)}SecurityScan.jscheckAsyncRequest(currentasyncid,handleasyncRes)}),auraiterations=0;
+
+
+
+</script>
+
+    <apex:form id="form" >
+    
+       
+        
+        <div style="font-family:Helvetica; border-bottom:3px solid;   border-color: rgb(0,161,224); height:64px; width:760px; background-color:#ffffff;">   
+     <div style="font-size:34px; color:#837F7F;"><img style="width:50px;height:50px; float:left; padding:10px;" src="{!$Resource.S3_square_300dpi}" /> <div style="padding:15px; float:left; width:620px; color:#000;">SaaS Security Scanner for Salesforce</div><div style="float: right; padding-top:20px; font-size:13px">
+     <div class="dropdown">
+  <i class="fa fa-cog dropbtn" aria-hidden="true"></i>
+  <div class="dropdown-content">
+  <a href="/apex/Auditaccesscontrol">Audit Access Control</a>
+    <a href="/apex/digitsecs4settings">Settings</a>
+    
+	<a id="helpbutton" onclick="javascript:$('#overlay3, #overlay-back3').fadeIn(500);" href="#" style="color:#3A608D; text-decoration: none; outline: none;" onmouseover="this.style.color='#0D5DDF';" onmouseout="this.style.color='#3A608D';">Help</a>  </div>
+</div>
+     
+     </div></div>
+     </div>
+        
+        
+        <apex:pageMessages id="messages"/>
+        <!-- <apex:actionPoller action="{!checkAsyncRequest}" interval="5" rerender="form" rendered="{!NOT(ISNULL(AsyncResult))}"/> -->
+        
+            
+                <div style="width:750px; height:190px; font-family:Helvetica; padding-top:4px;">
+                <div style="width:180px; float:left;"></div>
+                <div style="width:254px; float:left; padding-left:5px;">
+                <div class="startscanbutton" onclick="updateMessages('+ Scan started ...');document.getElementById('scanspinner').style.display = 'block'; $('#overlay2, #overlay-back2').fadeIn(500);resetSessionStorage();">Scan</div>
+                <div class="abortbutton" onclick="javascript:sessionStorage.setItem('abort','yes'); document.getElementById('scanspinner').style.display = 'none';">Stop</div>
+                <div id="scanspinner" class="settings" style="display:none; float:left;"><img src="{!$Resource.green_progress}" height="80px" /></div>
+                <div class="settings" style="float:left; width:200px; height:50px"> <a id="scanresults" style="display:none;">Scan completed view results </a></div>
+                </div>
+                <div style="width:490px; height:180px; float:left;">
+               <textarea id="statusupdates" spellcheck="false" style="font-size:13px; border: solid 1px #1aa1dc;width:495px; height:180px; float:left; font-family:Helvetica; color:#04376f; border-radius:1%;"></textarea>
+                </div>
+                </div>
+                
+        
+      
+        
+        
+       <script>
+function ggunzip(e,t){var i=0,s=new JSZip(e,{base64:!0}),n="";for(s.file in s.files){if(i+=1,abort())return void updateMessages("+ Scan aborted ... ");if(s.file.endsWith(".page"))try{foundControllers=0;var o=s.files[s.file].asText(),a=s.file.replace("pages/","");a=a.replace(".page",""),n=fBaseURL+"apex/"+a,""!=(r=getFileIdfromName(s.file,1))&&parseapexpage(o,r,s.file,n,0)}catch(e){}else if(s.file.endsWith(".cls")){foundControllers=0;var o=s.files[s.file].asText(),r=getFileIdfromName(s.file,2);""!=r&&parseapexclass(o,r,s.file,n)}"settings/Security.settings"==s.file&&anlyzeSecuritySettings(s.files[s.file].asText());var l=JSON.stringify(s.file);l.includes(".cspTrustedSite")&&""!=s.files[s.file].asText().trim()&&anlyzeCSPSettings(s.file,s.files[s.file].asText()),l.includes(".corsWhitelistOrigin")&&""!=s.files[s.file].asText().trim()&&anlyzeCORSettings(s.file,s.files[s.file].asText()),l.includes("remoteSiteSettings")&&""!=s.files[s.file].asText().trim()&&anlyzeRemoteSettings(s.file,s.files[s.file].asText())}grabnextfiles()}function auditThridpartyAccess(){its={},its.exploit="Review the following endpoints with access to your environment",its.variable="NA",its.url=btoa("Remote Sites: "+JSON.stringify(gremotesettingsfile)+" CSP Sites: "+JSON.stringify(gCSPSettings)+" CORS Sites: "+JSON.stringify(gCORSettings)),its.file="file",its.line="NA",its.typed="26",its.code=btoa("Remote Sites "+JSON.stringify(gremotesettingsfile)+" CSP Sites "+JSON.stringify(gCSPSettings)+" CORS Sites "+JSON.stringify(gCORSettings)),its.severity="Medium",vulnerabilities.push(its),vulncount++}function anlyzeRemoteSettings(e,t){updateMessages("+ Analyzing "+e+" settings ...");var i=$.parseXML(t);$xml=$(i),$disableProtocolSecurity=$xml.find("disableProtocolSecurity"),$isActive=$xml.find("isActive"),$url=$xml.find("url"),"true"==$isActive.text()&&(gremotesettingsfile.push($url.text()),"true"==$disableProtocolSecurity.text()&&(its={},its.exploit="The SSL protocol security has been disabled for "+e,its.variable="NA",its.url=btoa("The SSL protocol security has been disabled for "+e),its.file=e,its.line="NA",its.typed="23",its.code=btoa($xml),its.severity="High",vulnerabilities.push(its),vulncount++),$url.text().startsWith("http://")&&(its={},its.exploit="The end point associated with "+e+" is not secure ",its.variable="NA",its.url=btoa($url.text()),its.file=e,its.line="NA",its.typed="24",its.code="NA",its.severity="High",vulnerabilities.push(its),vulncount++))}function anlyzeCSPSettings(e,t){updateMessages("+ Analyzing "+e+" CSP settings ...");var i=$.parseXML(t);$xml=$(i),$disableProtocolSecurity=$xml.find("endpointUrl"),$isActive=$xml.find("isActive"),$url=$xml.find("endpointUrl"),gCSPSettings.push($url.text()),"true"==$isActive.text()&&$url.text().startsWith("http://")&&(its={},its.exploit="The end point associated with "+e+" is not secure ",its.variable="NA",its.url=btoa($url.text()),its.file=e,its.line="NA",its.typed="25",its.code="NA",its.severity="High",vulnerabilities.push(its),vulncount++)}function anlyzeCORSettings(e,t){updateMessages("+ Analyzing "+e+" CORS settings ...");var i=$.parseXML(t);$xml=$(i),$isActive=$xml.find("isActive"),$url=$xml.find("urlPattern"),gCORSettings.push($url.text()),"true"==$isActive.text()&&$url.text().startsWith("http://")&&(its={},its.exploit="The end point associated with "+e+" is not secure ",its.variable="NA",its.url=btoa($url.text()),its.file=e,its.line="NA",its.typed="26",its.code="NA",its.severity="High",vulnerabilities.push(its),vulncount++)}function anlyzeSecuritySettings(e){updateMessages("+ Analyzing security settings ...");var t=$.parseXML(e);$xml=$(t),$complexity=$xml.find("complexity"),$expiration=$xml.find("expiration"),$historyRestriction=$xml.find("historyRestriction"),$lockoutInterval=$xml.find("lockoutInterval"),$maxLoginAttempts=$xml.find("maxLoginAttempts"),$minPasswordLength=$xml.find("minPasswordLength"),$questionRestriction=$xml.find("questionRestriction"),$enableCSRFOnGet=$xml.find("enableCSRFOnGet"),$enableCSRFOnPost=$xml.find("enableCSRFOnPost"),$enableClickjackNonsetupSFDC=$xml.find("enableClickjackNonsetupSFDC"),$enableClickjackNonsetupUser=$xml.find("enableClickjackNonsetupUser"),$enableClickjackSetup=$xml.find("enableClickjackSetup"),$sessionTimeout=$xml.find("sessionTimeout"),$enableCacheAndAutocomplete=$xml.find("enableCacheAndAutocomplete"),"NoRestriction"!=$complexity.text()&&"AlphaNumeric"!=$complexity.text()||(its={},its.exploit="The current password complexity is set to "+$complexity.text(),its.variable="NA",its.url=btoa("The current password complexity is set to "+$complexity.text()),its.file="NA",its.line="NA",its.typed="4",its.code="NA",its.severity="Medium",vulnerabilities.push(its),vulncount++),"OneYear"!=$expiration.text()&&"SixMonths"!=$expiration.text()||(its={},its.exploit="The current password expiration policy is set to "+$expiration.text(),its.variable="NA",its.url=btoa("The current password expiration policy is set to "+$expiration.text()),its.file="NA",its.line="NA",its.typed="6",its.code="NA",its.severity="Medium",vulnerabilities.push(its),vulncount++),parseInt($historyRestriction.text())<3&&(its={},its.exploit="The current password history settings are set to remember the last "+$historyRestriction.text()+" password(s).",its.variable="NA",its.url=btoa("The current password history settings are set to remember the last "+$historyRestriction.text()+" password(s)."),its.file="NA",its.line="NA",its.typed="7",its.code="NA",its.severity="Medium",vulnerabilities.push(its),vulncount++),""==$lockoutInterval.text()&&(its={},its.exploit="The current setting does not lockout a user out due to numerous failed login attempts.",its.variable="NA",its.url=btoa("The current setting does not lockout a user out due to numerous failed login attempts."),its.file="NA",its.line="NA",its.typed="8",its.code="NA",its.severity="Low",vulnerabilities.push(its),vulncount++),"NoLimit"==$maxLoginAttempts.text()&&(its={},its.exploit="The current setting does not lock a user after repeated failed login attempts.",its.variable="NA",its.url=btoa("The current setting does not lock a user after repeated failed login attempts."),its.file="NA",its.line="NA",its.typed="9",its.code="NA",its.severity="High",vulnerabilities.push(its),vulncount++),"FiveCharacters"!=$minPasswordLength.text()&&"EightCharacters"!=$minPasswordLength.text()||(its={},its.exploit="The current setting only requires a password of "+$minPasswordLength.text()+" characters.",its.variable="NA",its.url=btoa("The current setting only requires a password of "+$minPasswordLength.text()+" characters."),its.file="NA",its.line="NA",its.typed="10",its.code="NA",its.severity="Medium",vulnerabilities.push(its),vulncount++),"None"==$questionRestriction.text()&&(its={},its.exploit="The current setting allows to save password as the secret question.",its.variable="NA",its.url=btoa("The current setting allows to save password as the secret question."),its.file="NA",its.line="NA",its.typed="11",its.code="NA",its.severity="High",vulnerabilities.push(its),vulncount++),"false"!=$enableCSRFOnGet.text()&&""!=$enableCSRFOnGet.text()||(its={},its.exploit="Cross-Site Request Forgery (CSRF) protection on GET requests on non-setup pages is not enabled.",its.variable="NA",its.url=btoa("Cross-Site Request Forgery (CSRF) protection on GET requests on non-setup pages is not enabled."),its.file="NA",its.line="NA",its.typed="12",its.code="NA",its.severity="Low",vulnerabilities.push(its),vulncount++),"false"!=$enableCSRFOnPost.text()&&""!=$enableCSRFOnPost.text()||(its={},its.exploit="Cross-Site Request Forgery (CSRF) protection on POST requests on non-setup pages is not enabled.",its.variable="NA",its.url=btoa("Cross-Site Request Forgery (CSRF) protection on POST requests on non-setup pages is not enabled."),its.file="NA",its.line="NA",its.typed="13",its.code="NA",its.severity="Medium",vulnerabilities.push(its),vulncount++),"false"!=$enableClickjackNonsetupSFDC.text()&&""!=$enableClickjackNonsetupSFDC.text()||(its={},its.exploit="Clickjack protection for non-setup Salesforce pages is not enabled.",its.variable="NA",its.url=btoa("Clickjack protection for non-setup Salesforce pages is not enabled."),its.file="NA",its.line="NA",its.typed="14",its.code="NA",its.severity="Low",vulnerabilities.push(its),vulncount++),"false"!=$enableClickjackNonsetupUser.text()&&""!=$enableClickjackNonsetupUser.text()||(its={},its.exploit="Clickjack protection for non-setup customer pages is not enabled.",its.variable="NA",its.url=btoa("Clickjack protection for non-setup Salesforce pages is not enabled."),its.file="NA",its.line="NA",its.typed="15",its.code="NA",its.severity="Low",vulnerabilities.push(its),vulncount++),"false"!=$enableClickjackSetup.text()&&""!=$enableClickjackSetup.text()||(its={},its.exploit="Clickjack protection for setup pages is not enabled.",its.variable="NA",its.url=btoa("Clickjack protection for setup pages is not enabled."),its.file="NA",its.line="NA",its.typed="16",its.code="NA",its.severity="Medium",vulnerabilities.push(its),vulncount++),"FourHours"!=$sessionTimeout.text()&&"TwelveHours"!=$sessionTimeout.text()&&"EightHours"!=$sessionTimeout.text()&&""!=$sessionTimeout.text()||(its={},its.exploit="Session timeout is set too high at "+$sessionTimeout.text()+".",its.variable="NA",its.url=btoa("Session timeout is set too high at "+$sessionTimeout.text()+"."),its.file="NA",its.line="NA",its.typed="17",its.code="NA",its.severity="Medium",vulnerabilities.push(its),vulncount++),"true"==$enableCacheAndAutocomplete.text&&(its={},its.exploit="Auto complete and cache for login page is enabled.",its.variable="NA",its.url=btoa("Auto complete and cache for login page is enabled."),its.file="NA",its.line="NA",its.typed="17",its.code="NA",its.severity="Medium",vulnerabilities.push(its),vulncount++)}function parsestringliterals(e,t,i){var s=0,n=t,o=t,a=o,r=new RegExp("(\\\\')");for(o=o.replace(r,""),a=a.replace(r,""),n=n.replace(r,"");a.match("\\'+");){scauniqueint++;var l=o.indexOf("'"),u=(o=o.slice(o.indexOf("'")+1,o.length)).indexOf("'");o.indexOf("'");a=o.slice(o.indexOf("'")+1,o.length);o.indexOf("'");o=o.slice(0,o.indexOf("'")),n=n.replace("'"+o+"'","SCALITERAL_"+scauniqueint);var c={};c.file=e,c.line=i+1,c.indexstart=s+l,c.indexend=s+l+u+2,c.key="SCALITERAL_"+scauniqueint,c.value=o,stringliterals.push(c),o=a,s=s+l+u}return n}function parsesoql(e,t,i){var s=t,n=s;scauniqueint++;var o=n.indexOf("["),a=n.indexOf("]");n=n.slice(n.indexOf("[")+1,n.indexOf("]")),s=s.replace("["+n+"]","SOQLITERAL_"+scauniqueint);var r={};return r.file=e,r.line=i+1,r.indexstart=o,r.indexend=a,r.key="SOQLITERAL_"+scauniqueint,r.value=n,soqlparsedstrings.push(r),parseassignments(e,s,line),s}function parseassignments(e,t,i){try{var s=[],n=[],o=[],a=t.split("{");$.each(a,function(t,a){s=[],n=[],o=[];var r=a.split(";");$.each(r,function(t,s){if(""!=s.trim()){var n=s.split("=");2==n.length?(scauniqueint++,itx={},itx.file=e,itx.assignmentid="SCAASSIGNMENTS_"+scauniqueint,itx.line=i,itx.lhs=n[0].trim().split(" "),itx.rhs=n[1].trim().split(" "),itx.type="",itx.vflags=[],itx.pflags=[],o.push(itx)):(scauniqueint++,itx={},itx.file=e,itx.functionid="SCAASSIGNMENTS_"+scauniqueint,itx.line=i,itx.lhs=n[0].trim().split(" "),itx.rhs=[],itx.type="",itx.vflags=[],itx.pflags=[],o.push(itx)),xdefs.push(o)}})})}catch(e){}}function parsedefinitions(e,t,i){}function getfunctionsfromcode(e,t,i){try{var s,n,o=[],a=[],r=[],l=t.split("{");$.each(l,function(t,l){var u=l.split(";");$.each(u,function(t,l){r=[],o=[],a=[];for(f=0;f<l.length;f++)"("==l[f]&&(o.push(f),s=f),")"==l[f]&&(a.push(f),n=f);for(var u=l,c=o,f=0;f<o.length;f++){var d=c[o.length-(f+1)];(t=a.indexOf(x))>-1&&a.splice(t,1);var x,m=0,h=1;$.each(a,function(e,t){1==h&&t>d?(h=2,m=t-d,x=t):t-d<m&&t>d&&(m=t-d,x=t),1==o.length&&(x=t)}),u=(u=l).substring(d+1,x),scauniqueint++,itx={},itx.file=e,itx.functionid="SCAFUNCTIONCALL_"+scauniqueint,itx.opencurly=d,itx.closecurly=x,itx.functionsig=[],itx.rawfunctionsig="",itx.parameters=u,itx.type="",itx.vflags=[],itx.pflags=[],itx.line=i,itx.trace_params=[],itx.assigned_to=[],r.push(itx)}u=l;for(var g="",v=0,b=0;b<r.length;b++){var S=r[b].opencurly;for(p=S;p>0;){if(p--,(" "==l[p]||","==l[p]||"="==l[p])&&0==v){var y=u.substring(0,p);g=(g=u.substring(p,S).toLowerCase().trim()).replace("if(","").replace("}","");var A=y.split("=");$.each(A,function(e,t){""!=t&&(r[b].assigned_to=t.trim().split(" "))}),r[b].rawfunctionsig=g.trim(),r[b].functionsig=g.split("."),v=1}0==v&&(g=(g=u.substring(p,S)).substring(g.indexOf("(")+1,g.length).toLowerCase(),r[b].rawfunctionsig=g.trim(),r[b].functionsig=g.split("."))}v=0}xfunctioncalls.push(r)})})}catch(e){}}function parseapexclass(e,t,i,s){try{var n="",o="",a=0;updateMessages("+ Analyzing "+i+" ..."),itm={},itm.file=i,itm.intfuncs=[],foundfuncs.push(itm);for(var r=0,l=e.split("\n"),u=0;u<l.length&&"@istest"!=l[u].trim().toLowerCase();u++)if(l[u].trim().toLowerCase(),l[u].trim().match("^[////]"));else if(l[u].trim().match("^[///*]")&&l[u].trim().match("[/*//]$"));else if(l[u].trim().match("^[///*]"))r=1;else if(r&&l[u].trim().match("[/*//]$"))r=0;else if(!r){if(""!=l[u].trim().replace("\t","").replace("\r","")&&"{"!=l[u].trim()&&(a=u+1),""!=l[u].trim()){if(l[u].trim().match("[////]")){var c=l[u].split("//");c.length>1&&(l[u]=c[0])}if(l[u].match(startlineregex)&&(item={},item.file=i,"{"==l[u].trim()?(item.startline=a,item.codesnip=l[a-1]):(item.startline=u+1,item.codesnip=l[u]),item.endline="",codeblocks.push(item)),l[u].match(endlineregex)){var p=0;$.each(codeblocks,function(e,t){t.startline>p&&""==t.endline&&(p=t.startline)}),$.each(codeblocks,function(e,t){t.startline==p&&(t.endline=u+1)})}$.each(interestingfuncs,function(e,t){l[u].toLowerCase().match(t.func)&&(itx={},itx.line=u+1,itx.id=t.id,itx.mitigated=0,itx.code=l[u].trim(),itx.verified=0,$.each(foundfuncs,function(e,t){t.file==i&&t.intfuncs.push(itx)}))});var f=l[u].toLowerCase();if(new RegExp(SOQLInjection).test(f)){var d=u+1;its={},its.exploit="SOQL Injection found @ "+i+" at line "+d,its.variable="NA",its.url="NA",its.file=i,its.line=u+1,its.typed="1",its.code=btoa(l[u]),its.severity="High",vulnerabilities.push(its),vulncount++}$.each(requestApexobjects,function(e,s){if(l[u].toLowerCase().match(s.regularex)){var n=l[u].toLowerCase().indexOf(s.rawobject);n+=s.rawobject.length;var o=l[u].slice(n),a=(o.indexOf(")"),o.split("'"));$.each(MetaDataFilenames,function(e,s){$.each(s.apexControllers,function(e,n){if(n.controller==t){var o=0;$.each(fuzzedinputs,function(e,t){var i=fBaseURL+"apex/"+s.id;t.url==i&&t.variabletotest==a[1]&&(o=1)}),0==o&&(item={},item.url=fBaseURL+"apex/"+s.id,item.variabletotest=a[1],item.method="GET",item.linenumber=u+1,item.vfpage=i,item.id=t,fuzzedinputs.push(item))}})})}}),$.each(foundfuncs,function(e,t){t.file==i&&$.each(t.intfuncs,function(e,i){$.each(DMLfuncs,function(e,s){0==i.verified&&i.id==s.DMLfunc&&$.each(t.intfuncs,function(e,s){$.each(DMLfuncs,function(e,n){$.each(n.protectfuncs,function(e,n){if(n.pfunc==s.id){var o,a,r,l="0",u=0,c=0;if($.each(codeblocks,function(e,s){if(s.file==t.file){var n;"0"==l&&(n=i.line-s.startline,l="1",o=n),n=i.line-s.startline,o>=n&&n>0&&(a=s.startline,r=s.endline,o=n),u<=a&&s.startline>=u&&(u=s.startline,c=s.endline)}}),s.code.match(ifnot)){if(i.line>=u&&i.line>=c)return i.mitigated=1,void(i.verified=1)}else if(s.line>=a&&s.line<=r)return i.mitigated=1,void(i.verified=1)}})})})})})})}var x={};if(x.file=i,l[u].toLowerCase().match("\\b(class)\\b")){var m,h=l[u].toLowerCase().indexOf("class")+5;if(l[u].match("\\{+")){var g=l[u].toLowerCase().indexOf("{");m=l[u].slice(h,g)}else m=l[u].slice(h,l[u].length);x.class=m.trim(),x.line=u+1,l[u].toLowerCase().match("\\b(public)\\b")?x.scope="public":l[u].toLowerCase().match("\\b(private)\\b")&&(x.scope="private"),x.sharing="na",l[u].toLowerCase().match("\\b(with sharing)\\b")&&(x.sharing="with sharing"),l[u].toLowerCase().match("\\b(without sharing)\\b")&&(x.sharing="without sharing"),x.sca=[],scaf.push(x)}if("1"==scachecks){var v=parsestringliterals(i,l[u]);if((v=o+v).match("\\[+")||v.match("\\]+")||""!=o){for(var b=0,S=0,y=0;y<v.length;y++)"["==v[y]&&b++,"]"==v[y]&&S++;b==S?(parsesoql(i,v,u+1),o=""):o=v}if((v=n+v).match("\\(+")||v.match("\\)+")||""!=n){for(var b=0,S=0,y=0;y<v.length;y++)"("==v[y]&&b++,")"==v[y]&&S++;b==S?(getfunctionsfromcode(i,v,u+1),n=""):n=v}else v.match("=+")?parseassignments(i,v,u+1):parsedefinitions(i,v,u+1)}}$.each(foundfuncs,function(e,t){t.file==i&&$.each(t.intfuncs,function(e,i){$.each(DMLfuncs,function(e,s){if(i.id==s.DMLfunc&&0==i.mitigated){return its={},its.exploit="CRUD - FLS: Authorization bypass issue found @ "+t.file+" on line "+i.line,its.variable="NA",its.url="NA",its.file=t.file,its.line=i.line.toString(),its.typed="2",its.code=btoa(i.code),its.severity="High",vulnerabilities.push(its),vulncount++,!1}})})}),functioncalltrace.push(xfunctioncalls),codeblocks=[],functioncalltrace=[],foundfuncs=[]}catch(e){}}function lightningSecurityChecks(e,t,i,s,n){try{var o=UglifyJS.parse(e),a=new UglifyJS.TreeWalker(function(e){if(void 0!==e.body&&void 0!==e.body.operator&&$.each(aurabannedOperators,function(t,s){e.body.operator==s&&(its={},its.exploit="Use of instanceof is disallowed in Lightning component @ "+i+" line "+e.start.line,its.variable="NA",its.url="NA",its.file=i,its.line=e.start.line,its.typed="19",its.code=btoa(e.body.operator),its.severity="High",vulnerabilities.push(its),vulncount++)}),e instanceof UglifyJS.AST_If&&void 0!==e.condition&&void 0!==e.condition.operator&&$.each(aurabannedOperators,function(t,s){e.condition.operator==s&&(its={},its.exploit="Use of instanceof is disallowed in Lightning component @ "+i+" line "+e.start.line,its.variable="NA",its.url="NA",its.file=i,its.line=e.start.line,its.typed="19",its.code=btoa(e.condition.operator),its.severity="High",vulnerabilities.push(its),vulncount++)}),e instanceof UglifyJS.AST_Call&&void 0!==e.expression&&void 0!==e.expression.expression&&void 0!==e.expression.expression.name&&void 0!==e.expression.property)if("document"==e.expression.expression.name){t=0;$.each(aurasecuredocumentFuncs,function(i,s){s==e.expression.property&&(t=1)}),0==t&&(its={},its.exploit="Use of insecure document functions in Lightning component is not allowed @ "+i+" line "+e.start.line,its.variable="NA",its.url="NA",its.file=i,its.line=e.start.line,its.typed="21",its.code=btoa(e.expression.expression.name+"."+e.expression.property),its.severity="High",vulnerabilities.push(its),vulncount++)}else if(void 0!==e.expression&&void 0!==e.expression.expression&&void 0!==e.expression.expression.name&&void 0!==e.expression.property)if("window"==e.expression.expression.name){var t=0;$.each(aurasecurewindowFuncs,function(i,s){s==e.expression.property&&(t=1)}),0==t&&(its={},its.exploit="Use of insecure window functions in Lightning component is not allowed @ "+i+" line "+e.start.line,its.variable="NA",its.url="NA",its.file=i,its.line=e.start.line,its.typed="22",its.code=btoa(e.expression.expression.name+"."+e.expression.property),its.severity="High",vulnerabilities.push(its),vulncount++)}else void 0!==e.expression&&void 0!==e.expression.expression&&void 0!==e.expression.expression.name&&"Aura"==e.expression.expression.name&&(its={},its.exploit="Use of Aura namespace in Lightning component is not allowed @ "+i+" line "+e.start.line,its.variable="NA",its.url="NA",its.file=i,its.line=e.start.line,its.typed="21",its.code=btoa(e.expression.expression.name),its.severity="High",vulnerabilities.push(its),vulncount++)});o.walk(a)}catch(e){}}function parseapexpage(e,t,i,s,n){var o=e.split("\n");updateMessages("+ Analyzing "+i+" ...");for(var a=0;a<o.length;a++){if(o[a].toLowerCase().match(escapeXSS)||o[a].toLowerCase().match(auraescapeXSS)||o[a].toLowerCase().match(innerJSBlocks)||o[a].toLowerCase().match(innerHTMLBlocks)){l=a+1;its={},its.exploit="Potential XSS due to disabled escaping @ "+i+" line "+l,its.variable="NA",its.url="NA",its.file=i,its.line=a+1,its.typed="3",its.code=btoa(o[a]),its.severity="Medium",vulnerabilities.push(its),vulncount++}if(0==foundControllers&&$.each(apexControllerobjs,function(e,t){if(o[a].toLowerCase().match(t.regularex)){foundControllers=1;var s=o[a].toLowerCase().indexOf(t.rawobject);s+=t.rawobject.length;var n=o[a].slice(s),r=(n.indexOf(" "),n.split('"'));its={},its.controller=r[0],$.each(MetaDataFilenames,function(e,t){if(t.file==i){if(t.apexControllers.push(its),o[a].toLowerCase().indexOf("action")>1){var s=o[a].slice(o[a].toLowerCase().indexOf("action")+10);s=s.slice(0,s.indexOf('"')-1),t.initaction=s}return!1}});var l=o[a].toLowerCase().indexOf("extensions=");if(l>0){s=l+"extensions=".length;var u=o[a].slice(s).split('"')[1].split(",");$.each(u,function(e,t){$.each(MetaDataFilenames,function(e,s){if(s.file==i)return itss={},itss.controller=t,s.apexControllers.push(itss),!1})})}}}),$.each(requestobjects,function(e,n){if(o[a].toLowerCase().match(n.regularex)){var r=o[a].toLowerCase().indexOf(n.rawobject);r+=n.rawobject.length;var l=o[a].slice(r),u=l.indexOf("}"),c=l.slice(0,u),p=0;$.each(fuzzedinputs,function(e,t){t.url==s&&t.variabletotest==c.trim()&&(p=1)}),0==p&&(item={},item.url=s,item.variabletotest=c.trim(),item.method=n.method,item.linenumber=a+1,item.vfpage=i,item.id=t,fuzzedinputs.push(item),jsonString=JSON.stringify(fuzzedinputs))}}),1==n&&""!=o[a].trim()){var r=o[a].trim();if(r.match(dcUsage)||r.match(dcUsage1)||r.match(dcUsage3)||r.match(dcUsage4)){l=a+1;its={},its.exploit="Accessing DOM using document or window object is not allowed in Lightning "+i+" line "+l,its.variable="NA",its.url="NA",its.file=i,its.line=a+1,its.typed="3",its.code=btoa(o[a]),its.severity="Medium",vulnerabilities.push(its),vulncount++}if(r.match(dcUsage2)){var l=a+1;its={},its.exploit="Accessing XMLHTTPRequest with LockerService not allowed  "+i+" line "+l,its.variable="NA",its.url="NA",its.file=i,its.line=a+1,its.typed="3",its.code=btoa(o[a]),its.severity="Medium",vulnerabilities.push(its),vulncount++}}}var u=i.replace("pages/",""),c=(u=u.replace(".page","")).split("__");c.length>1?c[0]+"__"==SalesforceNamespace&&XSSPostFuzzing(s):XSSPostFuzzing(s)}function XSSPostFuzzing(e){if(currentexploitcount<fuzzcountlimit){var t,i=[];$.ajax({type:"GET",url:e,async:!1,crossDomain:!0,success:function(s){i=[],t=s,html=$.parseHTML(t,document,!1),$.each(html,function(t,s){if("contentWrapper"==s.id)for(var n=s.childNodes,t=0;t<n.length;t++){for(var o=n[t].getElementsByTagName("span"),a=n[t].getElementsByTagName("form"),r=0;r<a.length;r++)if("j_id0:j_id2"==a[r].id)for(var l=a[r].getElementsByTagName("input"),u=0;u<l.length;u++)its={},its.var=l[u].name,i.push(its);if(i.length>0)for(var c="",r=0;r<o.length;r++)if(void 0===o[r].id);else if("ajax-view-state-page-container"==o[r].id){for(var l=o[r].getElementsByTagName("input"),u=0;u<l.length;u++)c+=l[u].name+"="+encodeURIComponent(l[u].value)+"&";$.each(fuzzer,function(t,s){if(!(currentexploitcount<fuzzcountlimit))return!1;if(abort())updateMessages("+ Scan aborted ... ");else{uniqueid++;var n=e+"?",o=e+"?AJAXREQUEST=_viewRoot&";$.each(i,function(e,t){var i=t.var.split(":"),a=t.var;i.length>0&&(a=i[i.length-1]),n+=t.var+"="+s.exploitstart+a+s.exploitend+"&",o+=t.var+"="+s.exploitstart+a+s.exploitend+"&"}),n=n+"&"+c,o=o+"&"+c,temps={},temps.url=e,temps.id=uniqueid,temps.variable="postvariable",temps.exploit=s.exploitstart+uniqueid+s.exploitend,temps.exploiturl=n,temps.method="",temps.linenumber="",temps.vfpage="",uniqueid++,its={},its.functionalURL=n,its.fuzzed="no",its.url=e,its.id=uniqueid,its.variable="postvariable",its.exploiturl=n,xssfunctionalURLs.push(its),currentexploitcount++,temps={},temps.url=e,temps.id=uniqueid,temps.variable="postvariable",temps.exploit=s.exploitstart+uniqueid+s.exploitend,temps.exploiturl=o,temps.method="",temps.linenumber="",temps.vfpage="",its={},its.functionalURL=o,its.fuzzed="no",its.url=e,its.id=uniqueid,its.variable="postvariable",its.exploiturl=o,xssfunctionalURLs.push(its),currentexploitcount++}})}}})}})}sessionStorage.setItem("xssfunctionalURLs",JSON.stringify(xssfunctionalURLs))}function SOQLInjectiontests(){currentexploitcount<fuzzcountlimit&&(updateMessages("+ Starting SOQL Injection tests ..."),$.each(fuzzedinputs,function(e,t){abort()?updateMessages("+ Scan aborted ... "):$.each(soqlfuzzer,function(e,i){if(abort())updateMessages("+ Scan aborted ... ");else{if(!(currentexploitcount<fuzzcountlimit))return!1;var s=t.url+"?"+t.variabletotest+"="+i.payload;its={},its.functionalURL=s,its.fuzzed="no",its.variable=t.variabletotest,soqlfunctionURLs.push(its),currentexploitcount++}})}),sessionStorage.setItem("soqlfunctionURLs",JSON.stringify(soqlfunctionURLs)))}function XSSPersistenttests(){updateMessages("+ Starting Persistent & Stored XSS tests ... "),currentPersistentXSSURL="",currentexploitcount<fuzzcountlimit&&($.each(MetaDataFilenames,function(e,t){abort()?updateMessages("+ Scan aborted ... "):$.each(t.apexControllers,function(e,i){abort()?updateMessages("+ Scan aborted ... "):fuzzedObjects.length>0&&$.each(fuzzedObjects,function(e,s){if(abort())updateMessages("+ Scan aborted ... ");else{if(!(currentexploitcount<fuzzcountlimit))return!1;if(SalesforceNamespace+i.controller.toLowerCase()==s.name){var n=fBaseURL+"apex/"+t.id+"?id="+s.id;currentPersistentXSSURL=n,uniqueid++;its={},its.functionalURL=n,its.fuzzed="no",persistentxssfunctionalURLs.push(its),currentexploitcount++}}})})}),sessionStorage.setItem("persistentxssfunctionalURLs",JSON.stringify(persistentxssfunctionalURLs)),currentPersistentXSSURL="")}function XSStests(){updateMessages("+ Start Reflected XSS tests ..."),currentexploitcount<fuzzcountlimit&&($.each(fuzzedinputs,function(e,t){abort()?updateMessages("+ Scan Aborted ... "):$.each(fuzzer,function(e,i){if(abort())updateMessages("+ Scan Aborted ... ");else{if(!(currentexploitcount<fuzzcountlimit))return!1;uniqueid++;var s=t.url+"?"+t.variabletotest+"="+i.exploitstart+uniqueid+i.exploitend;temps={},temps.url=t.url,temps.id=uniqueid,temps.variable=t.variabletotest,temps.exploit=i.exploitstart+uniqueid+i.exploitend,temps.exploiturl=s,temps.method=t.method,temps.linenumber=t.linenumber,temps.vfpage=t.vfpage,its={},its.functionalURL=s,its.fuzzed="no",its.url=t.url,its.id=uniqueid,its.variable=t.variabletotest,its.exploit=i.exploitstart+uniqueid+i.exploitend,its.exploiturl=s,xssfunctionalURLs.push(its),currentexploitcount++}})}),sessionStorage.setItem("xssfunctionalURLs",JSON.stringify(xssfunctionalURLs)))}String.prototype.replaceBetween=function(e,t,i){return this.substring(0,e)+i+this.substring(t)};
+       
+           
+        </script>
+        
+            
+<div id="success"></div>
+
+
+
+<div style="font-family:Helvetica; border-bottom:2px solid; border-color:#3A608D; background-color:#f0f0f6; width:760px;">   
+     <div style="font-size:24px; color:#837F7F;">Saved Scans</div>
+     </div>  
+      
+        <div style="font-family:Helvetica;">    
+        <apex:repeat var="cases" value="{!casos}">
+        <div id="{!JSENCODE(cases.cId)}" style="display:block;width:760px;float:left;">
+        
+        <div style="float:left; margin:5px;  padding:4px 8px 4px 8px; background-color:#f0f0f6; border-bottom:1px solid; border-color:#837F7F;">        
+        <div style="font-size:18px; border-bottom:solid 1px #c0c0c0;"><a href="{!JSENCODE(cases.Id)}" style="color:#3A608D; text-decoration: none; outline: none;" onmouseover="this.style.color='#0D5DDF';" onmouseout="this.style.color='#3A608D';"><apex:outputText id="Subject" value="{!cases.Subject}"></apex:outputText></a>
+        <div style="float:right;"><a style="color:#707070; text-decoration:none; outline:none; font-size:14px; font-weight:bolder;" onmouseover="this.style.color='#000000';" onmouseout="this.style.color='#707070';" href="#" title="Delete this record" onclick="javascript:{!JSENCODE(dotPrefix)}SecurityScan.deleteScan('{!JSENCODE(cases.cId)}',handledeleteResult)">x</a></div></div>
+        
+            <div style="color:#d43f3a;  font-weight:bold; font-size:22px; padding-left:15px; padding-top:5px; float:left; width:165px; height:45px;"><apex:outputText id="desc" value="{!cases.highcount} High"></apex:outputText></div>
+            <div style="color:#fdc431;  font-weight:bold; font-size:22px; padding-left:15px; padding-top:5px; float:left; width:165px; height:45px;"><apex:outputText id="desc1" value="{!cases.mediumcount} Medium "></apex:outputText></div>
+            <div style="color:#357abd;  font-weight:bold; font-size:22px; padding-left:15px; padding-top:5px; float:left; width:165px; height:45px;"><apex:outputText id="desc2" value="{!cases.lowcount} Low "></apex:outputText></div>
+            <div style="color:#aaa0a0;  font-weight:bold; font-size:22px;  padding-left:15px; padding-top:5px; float:left; width:165px; height:45px;"><apex:outputText id="desc3" value="{!cases.activecount} Active"></apex:outputText></div>
+            <div style="float:right; border-top:solid 1px #aaa0a0; margin-left:8px;"><a style="color:#3A608D; text-decoration:none; outline:none; font-size:14px;" onmouseover="this.style.color='#0D5DDF';" onmouseout="this.style.color='#3A608D';" href="{!JSENCODE(cases.Id)}"> View</a></div>
+                        <div style="float:right; border-top:solid 1px #aaa0a0;"><a style="color:#3A608D; text-decoration:none; outline:none; font-size:14px;" onmouseover="this.style.color='#0D5DDF';" onmouseout="this.style.color='#3A608D';" href="/apex/downloadreport?id={!JSENCODE(cases.cId)}" target="_blank"> Download</a></div>
+            
+            </div>
+        </div>
+        
+
+        </apex:repeat> 
+    </div>
+    <div id="mydiv"></div>
+    
+    <script>
+    updateMessages('+ Scan engine initializing ...');
+   	updateMessages('+ Please wait ...');
+    </script>
+   
+    </apex:form>
+ 
+</apex:page>
