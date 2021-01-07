@@ -17,21 +17,21 @@ for severity, bugsFound in scanFindings['scanSummary'].items():
             exit("S4 Found Too Many Critical Bugs, Exiting Build")
     if severity == "High":
         #Change below to change amount of High bugs you are OK with
-        if bugsFound == 0:
+        if bugsFound >= 0:
             print(severity)
             print(bugsFound)
         else:
             exit("S4 Found Too Many High Bugs, Exiting Build")
     if severity == "Medium":
         #Change below to change amount of Medium bugs you are OK with
-        if bugsFound == 0:
+        if bugsFound >= 0:
             print(severity)
             print(bugsFound)
         else:
             exit("S4 Found Too Many Medium Bugs, Exiting Build")
     if severity == "Low":
         #Change below to change amount of Low bugs you are OK with
-        if bugsFound == 0:
+        if bugsFound >= 0:
             print(severity)
             print(bugsFound)
         else:
