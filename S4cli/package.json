@@ -5,7 +5,7 @@
   "description": "S4 client library for Salesforce",
   "main": "S4.js",
   "scripts": {
-    "start": "Node S4 -user Richards.kevin93@gmail.com -pass Warcraft1! -file ../../S4.zip -orgid 5faf3c3cbd81aa4d1052ef54 -s4url https://s4dev.digitsec.com:8080"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "DigitSec, Inc.",
   "license": "ISC",
