@@ -14,5 +14,5 @@ aID.add(c.accountId);
 // List<Contact> ca = [Select Id, Name from Contact where accountId = :ax.Id]; 
 // ax.Number_of_Contacts__c = ca.size();
 // }
-//update la;
+// update la;
 }
