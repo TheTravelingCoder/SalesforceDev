@@ -10,14 +10,14 @@ scanFindings = json.load(findings)
 for severity, bugsFound in scanFindings['scanSummary'].items():
     if severity == "Critical":
         #Change below to change amount of Critical bugs you are OK with
-        if bugsFound == 0:
+        if bugsFound != 0:
             print(severity)
             print(bugsFound)
         else:
             exit("S4 Found Too Many Critical Bugs, Exiting Build")
     if severity == "High":
         #Change below to change amount of High bugs you are OK with
-        if bugsFound == 0:
+        if bugsFound != 0:
             print(severity)
             print(bugsFound)
         else:
