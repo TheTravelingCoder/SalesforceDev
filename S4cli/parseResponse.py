@@ -9,8 +9,12 @@ ts = time.time()
 list_of_files = glob.glob('./*.json') # * means all if need specific format then *.csv
 latest_file = max(list_of_files, key=os.path.getctime)
 
-print(os.path.getctime(latest_file))
-print(ts)
+check_file = os.path.getctime(latest_file)
+print("Current Time: " + ts)
+print("Last File Created Time: " + check_file)
+
+if ts - check_file >= 1000:
+    exit("Scan failed to initialize, please try again later. This might mean S4 is currently down")
 
 findings = open(latest_file)
 print("JSON File downloaded: " + latest_file)
