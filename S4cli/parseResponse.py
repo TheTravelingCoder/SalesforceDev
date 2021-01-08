@@ -1,19 +1,13 @@
 import glob
 import os
 import json
-import time
 
 allFindings = {}
-ts = time.time()
 
 list_of_files = glob.glob('./*.json') # * means all if need specific format then *.csv
 latest_file = max(list_of_files, key=os.path.getctime)
 
-check_file = os.path.getctime(latest_file)
-print("Current Time: " + time.ctime(ts))
-print("Last File Created Time: " + time.ctime(check_file))
-print(ts - check_file)
-if ts - check_file >= 10:
+if !latest_file:
     exit("Scan failed to initialize, please try again later. This might mean S4 is currently down")
 
 findings = open(latest_file)
@@ -51,8 +45,8 @@ for severity, bugsFound in scanFindings['scanSummary'].items():
 split1 = latest_file.split('_')
 split2 = split1[2].split('.')
 print("To see findings, please visit: https://s4dev.digitsec.com:8080/index#scan/" + split2[0])
+os.remove(latest_file)
 if len(allFindings) > 0:
     for severity, bugsFound in allFindings.items():
         print(severity, bugsFound)
-
     exit("S4 Found Too Many Bugs, Exiting Build")
