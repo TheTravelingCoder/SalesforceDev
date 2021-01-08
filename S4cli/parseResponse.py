@@ -38,6 +38,9 @@ for severity, bugsFound in scanFindings['scanSummary'].items():
             print(bugsFound)
         else:
             allFindings.update({severity: bugsFound})
+split1 = latest_file.split('_')
+split2 = split1[3].split('.')
+print(split2[0])
 if len(allFindings) > 0:
     for severity, bugsFound in allFindings.items():
         print(severity, bugsFound)
