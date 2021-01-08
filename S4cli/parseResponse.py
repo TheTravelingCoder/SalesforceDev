@@ -13,7 +13,8 @@ check_file = os.path.getctime(latest_file)
 print("Current Time: " + time.ctime(ts))
 print("Last File Created Time: " + time.ctime(check_file))
 
-if ts - check_file >= 100:
+if ts - check_file >= 50:
+    print(ts - check_file)
     exit("Scan failed to initialize, please try again later. This might mean S4 is currently down")
 
 findings = open(latest_file)
