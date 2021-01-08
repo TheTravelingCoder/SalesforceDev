@@ -39,4 +39,7 @@ for severity, bugsFound in scanFindings['scanSummary'].items():
         else:
             allFindings.update({severity: bugsFound})
 if len(allFindings) > 0:
+    for severity, bugsFound in allFindings.items():
+        print(severity, bugsFound)
+
     exit("S4 Found Too Many Bugs, Exiting Build")
