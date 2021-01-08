@@ -5,6 +5,7 @@ import json
 allFindings = {}
 
 list_of_files = glob.glob('./*.json') # * means all if need specific format then *.csv
+print("list of files: " + list_of_files)
 if list_of_files == "":
     exit("Scan failed to initialize, please try again later. This might mean S4 is currently down")
 
