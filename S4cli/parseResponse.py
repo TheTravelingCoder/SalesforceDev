@@ -7,10 +7,9 @@ allFindings = {}
 list_of_files = glob.glob('./*.json') # * means all if need specific format then *.csv
 latest_file = max(list_of_files, key=os.path.getctime)
 
-if latest_file:
-    exit("Scan failed to initialize, please try again later. This might mean S4 is currently down")
-
 findings = open(latest_file)
+if findings = "":
+    exit("Scan failed to initialize, please try again later. This might mean S4 is currently down")
 print("JSON File downloaded: " + latest_file)
 scanFindings = json.load(findings)
 for severity, bugsFound in scanFindings['scanSummary'].items():
