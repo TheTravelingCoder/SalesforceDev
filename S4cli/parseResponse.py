@@ -10,8 +10,8 @@ list_of_files = glob.glob('./*.json') # * means all if need specific format then
 latest_file = max(list_of_files, key=os.path.getctime)
 
 check_file = os.path.getctime(latest_file)
-print("Current Time: " + ts)
-print("Last File Created Time: " + check_file)
+print("Current Time: " + time.ctime(ts))
+print("Last File Created Time: " + time.ctime(check_file))
 
 if ts - check_file >= 1000:
     exit("Scan failed to initialize, please try again later. This might mean S4 is currently down")
