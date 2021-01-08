@@ -39,8 +39,7 @@ for severity, bugsFound in scanFindings['scanSummary'].items():
         else:
             allFindings.update({severity: bugsFound})
 split1 = latest_file.split('_')
-print(split1)
-split2 = split1[3].split('.')
+split2 = split1[2].split('.')
 print("To see findings, please visit: https://s4dev.digitsec.com:8080/index#scan/" + split2[0])
 if len(allFindings) > 0:
     for severity, bugsFound in allFindings.items():
