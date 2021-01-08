@@ -7,7 +7,7 @@ allFindings = {}
 list_of_files = glob.glob('./*.json') # * means all if need specific format then *.csv
 print(list_of_files)
 if list_of_files == []:
-    exit("Scan failed to initialize, please try again later. This might mean S4 is currently down")
+    exit("Scan failed to initialize, please try again later. This might mean S4 is currently down.")
 
 latest_file = max(list_of_files, key=os.path.getctime)
 findings = open(latest_file)
