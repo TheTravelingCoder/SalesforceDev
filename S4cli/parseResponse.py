@@ -1,11 +1,17 @@
 import glob
 import os
 import json
+import time
 
 allFindings = {}
+ts = time.time()
 
 list_of_files = glob.glob('./*.json') # * means all if need specific format then *.csv
 latest_file = max(list_of_files, key=os.path.getctime)
+
+print(os.path.getctime(latest_file))
+print(ts)
+
 findings = open(latest_file)
 print("JSON File downloaded: " + latest_file)
 scanFindings = json.load(findings)
