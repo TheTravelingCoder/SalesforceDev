@@ -2,7 +2,6 @@ import glob
 import os
 import json
 
-
 allFindings = {}
 
 list_of_files = glob.glob('./*.json') # * means all if need specific format then *.csv
