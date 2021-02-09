@@ -1,3 +1,5 @@
+
+
 <aura:application >
     <script>
 window.onerror = function(message, url, lineNumber) {  
