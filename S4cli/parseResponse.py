@@ -11,8 +11,7 @@ if list_of_files == []:
 
 latest_file = max(list_of_files, key=os.path.getctime)
 findings = open(latest_file)
-
-print("JSON File downloaded: " + latest_file)
+print("S4 JSON Report downloaded at: " + latest_file)
 scanFindings = json.load(findings)
 for severity, bugsFound in scanFindings['scanSummary'].items():
     if severity == "Critical":
@@ -45,10 +44,10 @@ for severity, bugsFound in scanFindings['scanSummary'].items():
             allFindings.update({severity: bugsFound})
 split1 = latest_file.split('_')
 split2 = split1[2].split('.')
-print("To see findings, please visit: https://s4dev.digitsec.com:8080/index#scan/" + split2[0])
+print("To see findings, please visit: https://s4.digitsec.com/index#scan/" + split2[0])
 findings.close()
 os.remove(latest_file)
 if len(allFindings) > 0:
     for severity, bugsFound in allFindings.items():
         print(severity, bugsFound)
-    exit("S4 Found Too Many Bugs, Exiting Build")
+    exit("S4 Found Too Many Bugs, Exiting Build!")

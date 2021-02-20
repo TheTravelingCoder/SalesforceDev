@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+    stages {
+        stage('Build'){
+            steps{
+                echo 'Building...'
+            }
+        }
+        stage('Test'){
+            steps{
+                echo 'Testing...'
+            }
+        }
+        stage(‘S4 Security Scan’) {
+            steps{
+                //For git, will need to add credentials if repo is not public
+	   //Can also use SSH url to checkout from branch
+   //“ssh://git@github.com:YourRepoName/yourepo.git”
+                git branch: '<branch_name>', credentialsId: 'Github', url: 'https://github.com/YourRepoName/yourepo.git'
+                
+                echo 'ZipFileing..'
+                // Relative zip location, make outside the workspace directory to prevent infinite loops
+                zip zipFile: '../S4.zip', dir:''
+                echo 'S4ing..'
+                //Sends Test.zip to S4 for scanning
+	   //If running on linux or mac, replace win below with version specific
+                bat "cd S4cli && S4-win -user S4Email -pass S4Password -file ../../S4.zip -orgid S4OrgId -s4url https://s4.digitsec.com"
+                bat "cd S4cli && python parseResponse.py"
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo 'Deploying....'
+            }
+        }
+    }
+    post {
+        always {
+            //Deleted the test.zip file that was created, to prevent future build failures
+            echo 'LeaveNoTraceing....'
+            bat 'del "..\\S4.zip"'
+        }
