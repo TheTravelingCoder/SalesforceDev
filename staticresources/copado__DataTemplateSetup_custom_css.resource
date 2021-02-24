@@ -663,3 +663,21 @@ a.ui-button:active,
     border-bottom: 1px solid #931403;
     text-decoration: none;
 }
+
+/* record matching modal */
+.co-dts-container .record-matching-modal-container {
+    box-sizing: border-box;
+    padding: 15px;
+    height: auto;
+    width: auto;
+    border-radius: 4px;
+    background-color: #f7f9fb;
+    border: 1px solid rgba(21, 137, 238, 0.2);
+    box-shadow: 0 5px 16px 0 rgba(151, 151, 151, 0.15);
+}
+
+.co-dts-container .record-matching-modal-container .custom-badge-inverse {
+    padding: 5px;
+    border-radius: 10px;
+    margin-right: 10px;
+}

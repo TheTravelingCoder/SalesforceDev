@@ -422,7 +422,7 @@
                                     </thead>
                                     <tbody>
                                     <apex:repeat value="{!desResponse.fields}" var="obl">
-                                        <apex:outputPanel layout="none" rendered="{!AND(obl.referenceTo == null,NOT(CONTAINS(InvalidFieldsForTemplate,obl.name)),obl.type != 'address',obl.type != 'location')}">
+                                        <apex:outputPanel layout="none" rendered="{!AND(LOWER(obl.name) != 'id',LOWER(obl.name) != 'ownerid',obl.referenceTo == null,obl.type != 'address',obl.type != 'location')}">
                                             <tr>
                                                 <td>
                                                     <apex:inputCheckbox styleClass="slds-checkbox row-select"
@@ -797,7 +797,7 @@
                                                                                          value="{!criteria.fieldName}"
                                                                                          size="1" multiselect="false"
                                                                                          disabled="{!OR(!enableADD,AND($ObjectType.copado__Data_Template__c.Accessible,!$ObjectType.copado__Data_Template__c.Createable,!$ObjectType.copado__Data_Template__c.Updateable))}">
-                                                                            <apex:selectOptions value="{!AllFieldsAPIName}" />
+                                                                            <apex:selectOptions value="{!allFieldsAPIName}" />
                                                                             <apex:actionSupport action="{!getFieldOperators}"
                                                                                     event="onchange"
                                                                                     reRender="objectFieldsTab,parentObjectFieldsTab,childrenObjectFieldsTab,mainObjectFiltersTab,filterLogicPanel,sampleContainer,generalWarningContainer,newTemplateContainer,activeCheckboxBlock,matchOwnerBlock,attachmentOptionsBlock,matchRecordTypeBlock,mainObjectTooltip,sourceOrgPanel"

@@ -391,6 +391,11 @@
                                     </script>
                                 </apex:pageblock>
                                 <apex:pageblock title="Status" id="pbStatus">
+                                    <style>
+                                        #thePage\:theForm\:pbStatus>div.pbHeader>table>tbody>tr>td.pbTitle {
+                                            width: 10% !important;
+                                        }
+                                    </style>
                                     <apex:pageBlockButtons id="pbbStatus" location="top">
                                         <apex:commandButton value="{!$Label.copado__deploy}" onclick="copadoApp.deploy();return false;" id="btnDeploy" />
                                         <apex:commandButton value="{!$Label.copado__cancel_deployment}" onclick="copadoApp.cancelDeploy();return false;" id="btnCancelDeploy"
@@ -482,6 +487,8 @@
                                                     <option value="Manual Task">{!$Label.STEP_TYPE_MANUAL_TASK}</option>
                                                     <option value="Git MetaData">{!$Label.STEP_TYPE_GIT_METADATA}</option>
                                                     <option value="Git Promotion" data-non-user-selectable="true" disabled="disabled">Git Promotion</option>
+                                                    <option value="Automation">{!$Label.Automation}</option>
+                                                    <option value="Salesforce Flow">{!$Label.SALESFORCE_FLOW}</option>
                                                     <option value="URL Callout">{!$Label.STEP_TYPE_URL_CALLOUT}</option>
                                                     <option value="External CI">{!$Label.EXTERNAL_CI_JOB}</option>
                                                 </select>

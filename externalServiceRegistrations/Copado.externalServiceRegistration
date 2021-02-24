@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExternalServiceRegistration xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>Copado</label>
+    <namedCredential>CopadoApi</namedCredential>
+    <schema>{
+  &quot;swagger&quot;: &quot;2.0&quot;,
+  &quot;info&quot;: {
+    &quot;description&quot;: &quot;Get the Copado backend job status and complete a Copado deployment job.&quot;,
+    &quot;version&quot;: &quot;0.1&quot;,
+    &quot;title&quot;: &quot;Copado API Job Status and Execute Snapshot&quot;
+  },
+  &quot;schemes&quot;: [
+    &quot;https&quot;
+  ],
+  &quot;paths&quot;: {
+    &quot;/json/v1/webhook/jobStatus/{copadoJobId}&quot;: {
+      &quot;get&quot;: {
+        &quot;summary&quot;: &quot;Get status of a Copado job.&quot;,
+        &quot;description&quot;: &quot;Get Job Status&quot;,
+        &quot;operationId&quot;: &quot;getJobStatus&quot;,
+        &quot;produces&quot;: [
+          &quot;application/json&quot;
+        ],
+        &quot;parameters&quot;: [
+          {
+            &quot;name&quot;: &quot;copadoJobId&quot;,
+            &quot;in&quot;: &quot;path&quot;,
+            &quot;description&quot;: &quot;Copado backend job Id.&quot;,
+            &quot;required&quot;: true,
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;x-example&quot;: &quot;9e68acda-f6aa-479e-ab73-8d83ef963c72&quot;
+          },
+          {
+            &quot;name&quot;: &quot;api_key&quot;,
+            &quot;in&quot;: &quot;query&quot;,
+            &quot;description&quot;: &quot;Copado API Key&quot;,
+            &quot;required&quot;: false,
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;x-example&quot;: &quot;88c305ff80a0dae9a7b850a17704ee98&quot;
+          }
+        ],
+        &quot;responses&quot;: {
+          &quot;200&quot;: {
+            &quot;description&quot;: &quot;Success checking job status.&quot;,
+            &quot;schema&quot;: {
+              &quot;$ref&quot;: &quot;#/definitions/JobResult&quot;
+            }
+          },
+          &quot;default&quot;: {
+            &quot;description&quot;: &quot;Error executing job.&quot;,
+            &quot;schema&quot;: {
+              &quot;$ref&quot;: &quot;#/definitions/JobError&quot;
+            }
+          }
+        },
+        &quot;externalDocs&quot;: {
+          &quot;description&quot;: &quot;Learn more about checking job status provided by this API.&quot;,
+          &quot;url&quot;: &quot;https://copado.docs.apiary.io/#reference/check-job-status/get&quot;
+        }
+      }
+    },
+    &quot;/json/v1/webhook/gitSnapshot/{snapshotId}&quot;: {
+      &quot;get&quot;: {
+        &quot;summary&quot;: &quot;Execute a Copado Snapshot.&quot;,
+        &quot;description&quot;: &quot;Execute Copado Snapshot&quot;,
+        &quot;operationId&quot;: &quot;executeSnapshot&quot;,
+        &quot;produces&quot;: [
+          &quot;application/json&quot;
+        ],
+        &quot;parameters&quot;: [
+          {
+            &quot;name&quot;: &quot;snapshotId&quot;,
+            &quot;in&quot;: &quot;path&quot;,
+            &quot;description&quot;: &quot;Git Snapshot record Id.&quot;,
+            &quot;required&quot;: true,
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;x-example&quot;: &quot;a0K1n00000V9bHR&quot;
+          },
+          {
+            &quot;name&quot;: &quot;api_key&quot;,
+            &quot;in&quot;: &quot;query&quot;,
+            &quot;description&quot;: &quot;Copado API Key&quot;,
+            &quot;required&quot;: false,
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;x-example&quot;: &quot;88c305ff80a0dae9a7b850a17704ee98&quot;
+          },
+          {
+            &quot;name&quot;: &quot;apply_env_vars&quot;,
+            &quot;in&quot;: &quot;query&quot;,
+            &quot;description&quot;: &quot;Apply environment variables.&quot;,
+            &quot;required&quot;: false,
+            &quot;type&quot;: &quot;boolean&quot;,
+            &quot;x-example&quot;: true
+          },
+          {
+            &quot;name&quot;: &quot;apply_find_replace&quot;,
+            &quot;in&quot;: &quot;query&quot;,
+            &quot;description&quot;: &quot;Apply global find and replace (YAML) rules.&quot;,
+            &quot;required&quot;: false,
+            &quot;type&quot;: &quot;boolean&quot;,
+            &quot;x-example&quot;: true
+          }
+        ],
+        &quot;responses&quot;: {
+          &quot;200&quot;: {
+            &quot;description&quot;: &quot;Success starting job.&quot;,
+            &quot;schema&quot;: {
+              &quot;$ref&quot;: &quot;#/definitions/JobResult&quot;
+            }
+          },
+          &quot;default&quot;: {
+            &quot;description&quot;: &quot;Default exception.&quot;,
+            &quot;schema&quot;: {
+              &quot;$ref&quot;: &quot;#/definitions/JobError&quot;
+            }
+          }
+        },
+        &quot;externalDocs&quot;: {
+          &quot;description&quot;: &quot;Learn more about snapshot operations provided by this API.&quot;,
+          &quot;url&quot;: &quot;https://copado.docs.apiary.io/#reference/take-a-git-snapshot/jsonv1webhookgitsnapshotsnapshotidapikeyuserapikey/get&quot;
+        }
+      }
+    }
+  },
+  &quot;definitions&quot;: {
+    &quot;JobResult&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;required&quot;: [
+        &quot;copadoJobId&quot;,
+        &quot;isFinished&quot;,
+        &quot;isSuccess&quot;,
+        &quot;status&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;copadoJobId&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;example&quot;: &quot;9e68acda-f6aa-479e-ab73-8d83ef963c72&quot;
+        },
+        &quot;status&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;example&quot;: &quot;Queued&quot;
+        },
+        &quot;isFinished&quot;: {
+          &quot;type&quot;: &quot;boolean&quot;
+        },
+        &quot;isSuccess&quot;: {
+          &quot;type&quot;: &quot;boolean&quot;
+        }
+      }
+    },
+    &quot;JobError&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;required&quot;: [
+        &quot;error&quot;,
+        &quot;message&quot;,
+        &quot;path&quot;,
+        &quot;status&quot;,
+        &quot;timestamp&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;error&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;example&quot;: &quot;Unauthorized&quot;
+        },
+        &quot;timestamp&quot;: {
+          &quot;type&quot;: &quot;integer&quot;,
+          &quot;format&quot;: &quot;int64&quot;
+        },
+        &quot;status&quot;: {
+          &quot;type&quot;: &quot;integer&quot;,
+          &quot;format&quot;: &quot;int32&quot;
+        },
+        &quot;message&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;path&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        }
+      }
+    }
+  }
+}</schema>
+    <schemaType>OpenApi</schemaType>
+    <status>Complete</status>
+</ExternalServiceRegistration>

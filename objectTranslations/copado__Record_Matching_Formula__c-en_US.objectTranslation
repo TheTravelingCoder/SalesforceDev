@@ -23,7 +23,7 @@
     </fields>
     <fields>
         <help><!-- Hashing the Formula will replace the original value with a unique, fixed-size set of random characters. It will ensure the value will not exceed the External Id field character limit but it will not be readable. --></help>
-        <label><!-- Hash External ID Formula --></label>
+        <label><!-- Hash External Id Value --></label>
         <name>copado__Hash_Formula__c</name>
     </fields>
     <fields>
