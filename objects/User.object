@@ -205,77 +205,15 @@
         <type>Hierarchy</type>
     </fields>
     <fields>
-        <fullName>TIMBASURVEYS__SurveyReminder__c</fullName>
-        <defaultValue>&apos;&apos;</defaultValue>
-        <deprecated>false</deprecated>
+        <fullName>S4Login__c</fullName>
         <externalId>false</externalId>
-        <label>SurveyReminder</label>
+        <label>S4Login</label>
         <required>false</required>
         <trackFeedHistory>false</trackFeedHistory>
         <type>TextArea</type>
     </fields>
-    <fields>
-        <fullName>TIMBASURVEYS__reminderStringSize__c</fullName>
-        <deprecated>false</deprecated>
-        <externalId>false</externalId>
-        <formula>LEN(TIMBASURVEYS__SurveyReminder__c)</formula>
-        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
-        <label>reminderStringSize</label>
-        <precision>18</precision>
-        <required>false</required>
-        <scale>0</scale>
-        <type>Number</type>
-        <unique>false</unique>
-    </fields>
-    <fields>
-        <fullName>copado__API_URL__c</fullName>
-        <deprecated>false</deprecated>
-        <externalId>false</externalId>
-        <formula>$Api.Partner_Server_URL_290</formula>
-        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
-        <label>API_URL</label>
-        <required>false</required>
-        <type>Text</type>
-        <unique>false</unique>
-    </fields>
-    <fields>
-        <fullName>copado__Hide_Copado_feedback__c</fullName>
-        <defaultValue>false</defaultValue>
-        <deprecated>false</deprecated>
-        <externalId>false</externalId>
-        <inlineHelpText>The visibility of the message asking users to rate &amp; feedback Copado on the AppExchange is controlled here.</inlineHelpText>
-        <label>Hide Copado feedback</label>
-        <trackFeedHistory>false</trackFeedHistory>
-        <type>Checkbox</type>
-    </fields>
-    <fields>
-        <fullName>copado__Show_Copado_Tips__c</fullName>
-        <defaultValue>true</defaultValue>
-        <deprecated>false</deprecated>
-        <externalId>false</externalId>
-        <label>Show Copado Tips</label>
-        <trackFeedHistory>false</trackFeedHistory>
-        <type>Checkbox</type>
-    </fields>
-    <fields>
-        <fullName>copado__Work_Manager_Panels__c</fullName>
-        <deprecated>false</deprecated>
-        <description>JSON containing current user panels on the Backlog</description>
-        <externalId>false</externalId>
-        <label>Work Manager Panels</label>
-        <length>131072</length>
-        <trackFeedHistory>false</trackFeedHistory>
-        <type>LongTextArea</type>
-        <visibleLines>2</visibleLines>
-    </fields>
     <listViews>
         <fullName>ActiveUsers</fullName>
-        <columns>FULL_NAME</columns>
-        <columns>CORE.USERS.ALIAS</columns>
-        <columns>CORE.USERS.USERNAME</columns>
-        <columns>CORE.USERS.LAST_LOGIN</columns>
-        <columns>CORE.USER_ROLE.NAME</columns>
-        <columns>CORE.PROFILE.NAME</columns>
         <filterScope>Everything</filterScope>
         <filters>
             <field>CORE.USERS.ACTIVE</field>
@@ -286,12 +224,6 @@
     </listViews>
     <listViews>
         <fullName>AdminUsers</fullName>
-        <columns>FULL_NAME</columns>
-        <columns>CORE.USERS.ALIAS</columns>
-        <columns>CORE.USERS.USERNAME</columns>
-        <columns>CORE.USERS.LAST_LOGIN</columns>
-        <columns>CORE.USER_ROLE.NAME</columns>
-        <columns>CORE.USERS.ACTIVE</columns>
         <filterScope>Everything</filterScope>
         <filters>
             <field>CORE.PROFILE.NAME</field>
@@ -302,13 +234,6 @@
     </listViews>
     <listViews>
         <fullName>AllUsers</fullName>
-        <columns>FULL_NAME</columns>
-        <columns>CORE.USERS.ALIAS</columns>
-        <columns>CORE.USERS.USERNAME</columns>
-        <columns>CORE.USERS.LAST_LOGIN</columns>
-        <columns>CORE.USER_ROLE.NAME</columns>
-        <columns>CORE.USERS.ACTIVE</columns>
-        <columns>CORE.PROFILE.NAME</columns>
         <filterScope>Everything</filterScope>
         <label>All Users</label>
     </listViews>

@@ -1,0 +1,251 @@
+<apex:page controller="SecurityScan" action="{!init}" sidebar="true">
+<apex:includeScript value="{!$Resource.s4jquery}"/>
+<apex:includeScript value="{!$Resource.s4jsziputil}"/>
+<apex:includeScript value="{!$Resource.s4jquerytimer}"/>
+<apex:includeScript value="{!$Resource.s4globals}"/>
+<apex:includeScript value="{!$Resource.s4uglifyjs}"/>
+<apex:includeScript value="/support/console/22.0/integration.js"/>
+<apex:stylesheet value="{!$Resource.s4fontawesome}"/>
+
+<style>
+
+/* The switch - the box around the slider */
+.switch {
+  position:relative;
+  display:inline-block;
+  width:60px;
+  height:34px;
+  float:left;
+  margin-left: 140px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {display:none;}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+.inputbox
+{
+width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    box-sizing: border-box;
+}
+
+.currentsetting
+{
+
+    float: left;
+    width: 20%;
+
+}
+.title
+{
+
+    width: 80%;
+    float: left;
+    padding-top: 10px;
+    font-family: Helvetica;
+    font-size: 16px;
+
+}
+.setting
+{
+	
+    float: left;
+    width: 96%;
+    height: auto;
+    margin: 15px;
+    border-bottom: 1px solid #00a1e0;
+    padding: 10px;
+	
+}
+.updates
+{
+	width: 100%;
+    height: 20px;
+    float: left;
+    text-align: center;
+    color: #2296f3;
+    font-size: 13px;
+}
+</style>
+
+
+
+<div id="maindiv" style="width:100%; height:auto;">
+<div style="width:100%; height:1500px;">  
+     <div style="font-family:Helvetica; border-bottom:3px solid; border-color: rgb(0,161,224); height:64px; width:100%; background-color:#fffff; float:left;">   
+     <div style="font-size:26px; color:#837F7F;"><a href="/apex/SecurityScan" style="color:#3A608D; text-decoration:none; outline:none;" onmouseover="this.style.color='#0D5DDF';" onmouseout="this.style.color='#3A608D';"><img style="width:50px;height:50px; float:left; padding:10px;" src="{!$Resource.S3_square_300dpi}" /><div style="padding-top:15px; float:left; color:#000;"> S4 </div></a><div style="padding:15px; float:left; color:rgb(0,161,224);">  &gt; </div> <div style="padding-top:15px; float:left; color:#000;">Security Scanner Settings</div>
+	</div>
+	<div id="updates" class="updates"></div>
+	<div id="placeholder">
+	
+		
+		
+	
+	</div>
+	
+	</div>
+	</div>
+	</div>
+	
+	<script>
+$("#updates").text('Getting Settings');	
+{!JSENCODE(dotPrefix)}SecurityScan.saveSettings(JSON.stringify(digitsecsettings),handleasyncResult);
+{!JSENCODE(dotPrefix)}SecurityScan.getSettings(digitsecsettings,handleasyncSettingsResult);	
+
+function handleasyncSettingsResult(result, status)
+{
+if (status && result != '') 
+{
+$("#updates").text('');
+digitsecsettings = $.parseJSON(atob(result));
+updateUI();
+}
+else
+{
+updateUI()
+}
+}
+function updateUI(){
+$.each(digitsecsettings, function(i,obj)
+         		{
+         		
+         		if(obj.type =='boolean')
+         		{
+	         		if(obj.value== 'true'){
+	         		$("<div>").addClass('setting')
+	         		.append($("<div>").addClass('title').text(obj.title))
+	         		.append($("<div>").addClass('currentsetting')
+	         		.append($("<label>").addClass('switch').append($('<input>').addClass('ccd').attr('type','checkbox').attr('checked',obj.value).attr('id', obj.id).change(updateSettings)).append($('<span>').addClass('slider round'))))
+	         		.appendTo("#placeholder");
+	         		}else
+	         		{
+					$("<div>").addClass('setting')
+	         		.append($("<div>").addClass('title').text(obj.title))
+	         		.append($("<div>").addClass('currentsetting')
+	         		.append($("<label>").addClass('switch').append($('<input>').addClass('ccd').attr('type','checkbox').attr('id', obj.id).change(updateSettings)).append($('<span>').addClass('slider round'))))
+	         		.appendTo("#placeholder");
+	         		}
+         		}else if(obj.type == 'text')
+         		{
+         		$("<div>").addClass('setting')
+	         		.append($("<div>").addClass('title').text(obj.title))
+	         		.append($("<div>").addClass('currentsetting')
+	         		.append($('<input>').addClass('inputbox').attr('id', obj.id).attr('value', obj.value).change(updateSettings)))
+	         		.appendTo("#placeholder");
+         		}else if(obj.type == 'integer')
+         		{
+         		$("<div>").addClass('setting')
+         			.append($("<div>").addClass('title').text(obj.title))
+	         		.append($("<div>").addClass('currentsetting')
+	         		.append($('<input>').addClass('inputbox').attr('id', obj.id).attr('value', obj.value).change(updateSettings)))
+	         		.appendTo("#placeholder");
+         		}else if(obj.type == 'custom_rule')
+         		{
+         		$("<div>").addClass('setting')
+         			.append($("<div>").addClass('title').text(obj.title))
+	         		.append($("<div>").addClass('currentsetting')
+	         		.append($('<input>').addClass('inputbox').attr('id', obj.id).attr('value', obj.value).change(updateSettings)))
+	         		.appendTo("#placeholder");
+         		}
+ });
+ }
+ 
+function updateSettings()
+{
+$("#updates").text('Saving ...');
+$(":input").each(function(){
+var input = $(this); 
+
+var type = input.attr('type');
+
+$.each(digitsecsettings,function(i,obj)
+{
+         if(obj.id ==input.attr('id'))
+         {
+         	if(type == 'checkbox')
+         	{
+         		obj.value= "" + input.is(':checked') + "";
+         	}
+         	else
+         	{
+	         	if(obj.type == 'integer'){
+	         		if(parseInt(input.val())>0)
+	         		{
+	         		obj.value=input.val();
+	         		}
+	         	}else
+	         	{
+	         		obj.value=input.val();	
+	         	}
+         	}
+         }			
+});
+//}
+});
+
+{!JSENCODE(dotPrefix)}SecurityScan.saveSettings(JSON.stringify(digitsecsettings),handleasyncResult);
+}
+ 
+function handleasyncResult(result, status)
+{
+if (status && result == 'success') 
+{
+$("#updates").text('Saved');
+}
+else
+{
+$("#updates").text('Error saving settings. Please try again.');
+}
+}
+
+</script>
+</apex:page>

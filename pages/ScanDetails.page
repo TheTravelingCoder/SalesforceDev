@@ -1,0 +1,364 @@
+<apex:page standardController="Case" extensions="ScanDetails">
+<apex:form >
+<apex:incluDescript value="https://s4.digitsec.com/assets/js/config.js"/>
+    <script src="https://s4.digitsec.com/assets/js/login.js"></script>
+
+<style>
+
+/** The Magic **/
+.btn-breadcrumb .btn:not(:last-child):after {
+  content: " ";
+  display: block;
+  width: 0;
+  height: 0;
+  border-top: 17px solid transparent;
+  border-bottom: 17px solid transparent;
+  border-left: 10px solid white;
+  position: absolute;
+  top: 50%;
+  margin-top: -17px;
+  left: 100%;
+  z-index: 3;
+}
+.btn-breadcrumb .btn:not(:last-child):before {
+  content: " ";
+  display: block;
+  width: 0;
+  height: 0;
+  border-top: 17px solid transparent;
+  border-bottom: 17px solid transparent;
+  border-left: 10px solid rgb(173, 173, 173);
+  position: absolute;
+  top: 50%;
+  margin-top: -17px;
+  margin-left: 1px;
+  left: 100%;
+  z-index: 3;
+}
+
+/** The Spacing **/
+.btn-breadcrumb .btn {
+  padding:6px 12px 6px 24px;
+}
+.btn-breadcrumb .btn:first-child {
+  padding:6px 6px 6px 10px;
+}
+.btn-breadcrumb .btn:last-child {
+  padding:6px 18px 6px 24px;
+}
+
+
+
+/** Primary button **/
+.btn-breadcrumb .btn.btn-primary:not(:last-child):after {
+  border-left: 10px solid #428bca;
+}
+.btn-breadcrumb .btn.btn-primary:not(:last-child):before {
+  border-left: 10px solid #357ebd;
+}
+.btn-breadcrumb .btn.btn-primary:hover:not(:last-child):after {
+  border-left: 10px solid #3276b1;
+}
+.btn-breadcrumb .btn.btn-primary:hover:not(:last-child):before {
+  border-left: 10px solid #285e8e;
+}
+
+
+
+
+h5 {
+  display: block;
+  width: 100%;
+  line-height: 3rem;
+  font-weight: 700;
+  border-bottom: 1px solid #ddd;
+  font-size:12px;
+  margin-bottom: 5px;
+}
+</style>
+<script>
+var casetoclose = '';
+ function handleResult(result, event) {if (event.status) 
+ {
+ if(result !='failure')
+ {
+ 	elem = document.getElementById(result);
+ 	elem.innerHTML = 'Closed';
+ 	elem.style.backgroundColor = 'rgb(34, 184, 70)';
+ 	document.location.hash = result;
+ }
+ }  
+ 
+ }
+ 
+ function colorstatus(divsts, sts)
+ {
+ var divobj;
+ var priobj;
+ divobj = document.getElementById(divsts);
+ priobj = document.getElementById(divsts+'x');
+ 
+ if(sts == 'Active')
+ {
+ divobj.style.backgroundColor = 'rgb(121, 146, 177)';
+ }
+ if(sts == 'Closed')
+ { divobj.style.backgroundColor = 'rgb(34, 184, 70)';
+ }
+
+ 
+ if (priobj.innerText == 'High'){priobj.style.backgroundColor = '#d43f3a';}
+ if (priobj.innerText == 'Medium'){priobj.style.backgroundColor = '#fdc431';}
+ if (priobj.innerText == 'Low'){priobj.style.backgroundColor = '#357abd';}
+ }
+ 
+</script>
+
+      <div style="width:1000px;">
+      
+
+
+
+             
+     <div style="font-family:Helvetica; border-bottom:3px solid; border-color: rgb(0,161,224); height:64px; width:100%; background-color:#fffff; float:left;">   
+     <div style="font-size:26px; color:#837F7F;"><a href="/apex/SecurityScan" style="color:#3A608D; text-decoration:none; outline:none;" onmouseover="this.style.color='#0D5DDF';" onmouseout="this.style.color='#3A608D';"><img style="width:50px;height:50px; float:left; padding:10px;" src="{!$Resource.S3_square_300dpi}" /><div style="padding-top:15px; float:left; color:#000;"> S4 </div></a><div style="padding:15px; float:left; color:rgb(0,161,224);">  &gt; </div><a href="../{!JSENCODE(case.Id)}/e" style="color:#3A608D; text-decoration:none; outline:none;" onmouseover="this.style.color='#0D5DDF';" onmouseout="this.style.color='#3A608D';"><div style="padding-top:15px; float:left; color:#000;"> <apex:outputText id="Scantitle" value="{!case.Subject}"></apex:outputText></div></a> </div>
+     </div>
+            
+  
+        <div style="float:left; width:760px;">   
+        <div style="font-family:Helvetica;" >  
+        <apex:repeat var="cases" value="{!cas}">
+        <a href="#{!JSENCODE(cases.Id)}"></a>
+        <div style="float:left; margin:5px; width:740px; padding:4px 8px 4px 8px; background-color:#f0f0f6; border-bottom:1px solid; border-color:#000000;">
+        <div style="font-size:16px; padding-bottom:15px;"><a href="../{!JSENCODE(cases.Id)}" style="color:#3A608D; text-decoration:none; outline:none;" onmouseover="this.style.color='#0D5DDF';" onmouseout="this.style.color='#3A608D';"><apex:outputText id="Subject" value="{!cases.CaseNumber} - {!cases.Subject}"></apex:outputText></a></div>
+        <div style="float:left; width:740px; border-bottom:1px solid #3A608D;">
+        <div id="{!JSENCODE(cases.Id)}x" style="color: #FFFFFF; font-weight:bold; font-size:16px; padding-left:5px; padding-top:5px; float:left; width:80px; height:25px; background-color: #B9CDE5; text-align:center;"><apex:outputText id="severity"   value="{!cases.Priority}"></apex:outputText></div>
+        <div id="{!JSENCODE(cases.Id)}" style="color: #FFFFFF; font-weight:bold; font-size:16px; padding-left:5px; padding-top:5px; float:left; width:80px; height:25px; background-color:rgb(121, 146, 177); text-align:center;" ><apex:outputText id="status"   value="{!cases.Status}" ></apex:outputText></div>
+        </div>    
+        
+        <div style="padding-left:5px; padding-top:5px; float:left; width:735px; height:auto; background-color:#ffffff;"><div style="color:rgb(58, 96, 141); font-weight:bold; font-size:16px;">Issue (Code or Exploit)</div> 
+        <div style="padding-bottom:5px; "><apex:outputText id="remedy"  value="{!cases.Description}"></apex:outputText></div>
+        </div>
+        
+		<div style="padding-left:5px; padding-top:5px; float:left; width:735px; height:auto; background-color:#ffffff;"><div style="color:rgb(58, 96, 141); font-weight:bold; font-size:16px;">Fix</div> 
+		<div style="padding-bottom:4px; border-bottom:1px solid #c0c0c0;">
+        <apex:repeat value="{!cases.casecomments}" var="c">
+        <apex:outputField id="ccomments"  value="{!c.commentbody}"></apex:outputField>
+        </apex:repeat>
+        
+		</div>	
+    	</div>
+        
+        <div style="font-size:14px; font-weight:bold; float:right; padding-left:10px;"><a href="../{!JSENCODE(cases.Id)}/e" style="font-size:14px; font-weight:bold; float:right; border-top:1px solid #c0c0c0; padding-left:10px; color:#3A608D; text-decoration:none; outline:none;" onmouseover="this.style.color='#0D5DDF';" onmouseout="this.style.color='#3A608D';">Edit</a></div>
+        <div style="font-size:14px; font-weight:bold; float:right; border-top:1px solid #c0c0c0;"><a href="#" style="color:#3A608D; text-decoration:none; outline:none;" onmouseover="this.style.color='#0D5DDF';" onmouseout="this.style.color='#3A608D';" onclick="javascript:{!JSENCODE(dotPrefix)}ScanDetails.closeVulns('{!JSENCODE(cases.Id)}',handleResult)">Close</a></div>
+              
+
+        </div>
+		<script>
+		colorstatus('{!JSENCODE(cases.Id)}', '{!JSENCODE(cases.Status)}');
+		
+		</script>
+        </apex:repeat> 
+        
+       </div>
+       
+       </div>
+        
+        
+         
+         <div style="float:right; width:238px;">
+         <div style="height:45px;"><div id="backdiv" style="float:left;width:45px;"><a id="hrefback" ><img src="{!$Resource.leftarrow}" /></a></div><div id="currentpage" style="float:left; padding-top:15px; width:80%; text-align:center;"> </div><div id="nextdiv" style="float:right;"><a id="hrefnext" ><img src="{!$Resource.rightarrow}" /></a></div></div>
+         <div>
+         <h5>Scan Summary</h5>
+         <table style="position:relative;font-size:12px;color:#545454">
+         <tbody>
+         <tr><td><div><div style="width:52px;height:18px; padding-right:5px;">Status </div></div></td><td class="legendLabel">Completed</td></tr>
+         <tr><td><div><div style="width:52px;height:18px; padding-right:5px;">By </div></div></td><td class="legendLabel"><apex:outputText id="createdby" value="{!usernm}"></apex:outputText></td></tr>
+         <tr><td><div><div style="width:52px;height:18px; padding-right:5px;">Scanned </div></div></td><td class="legendLabel"><apex:outputText id="lastmod" value="{!case.LastModifiedDate}"></apex:outputText></td></tr>
+         <tr><td><div><div style="width:52px;height:18px; padding-right:5px;">Viewed </div></div></td><td class="legendLabel"><apex:outputText id="lastviewdate" value="{!case.LastViewedDate}"></apex:outputText></td></tr>
+         <tr><td><div><div style="width:52px;height:18px; padding-right:5px;">Closed </div></div></td><td class="legendLabel">{!ccount}</td></tr>
+         <tr><td><div><div style="width:52px;height:18px; padding-right:5px;">Active </div></div></td><td class="legendLabel">{!acount}</td></tr>
+         
+         </tbody>
+         </table>
+         </div>
+<div>
+         <h5>Vulnerabilities</h5>
+         <table style="float:right;position:relative;top:0px;right:0px;;font-size:smaller;color:#545454"><tbody><tr><td class="legendColorBox"><div style="border:1px 
+
+solid #fff;padding:1px"><div style="width:4px;height:0;border:5px solid #357abd;overflow:hidden"></div></div></td><td 
+
+class="legendLabel">{!lcount} Low</td></tr><tr><td class="legendColorBox"><div style="border:1px solid #fff;padding:1px"><div 
+
+style="width:4px;height:0;border:5px solid #fdc431;overflow:hidden"></div></div></td><td class="legendLabel">{!mcount} Medium</td></tr><tr><td 
+
+class="legendColorBox"><div style="border:1px solid #fff;padding:1px"><div style="width:4px;height:0;border:5px solid 
+
+#d43f3a;overflow:hidden"></div></div></td><td class="legendLabel">{!hcount} High</td></tr></tbody></table>
+         <canvas id="piechart" width="140" height="140">
+
+</canvas>
+
+<canvas id="piechart2" width="90" height="90" style="position: absolute; float: left;  z-index: 400;  margin-left: -118px; margin-top: 22px; border-style: solid;border-color: #a0a0a6;border-radius: 50%;">
+
+</canvas>
+
+
+
+</div>         
+         
+         </div>   
+</div>
+        
+        
+        
+   
+  </apex:form>
+  <script>
+  
+var first = Math.floor(({!hcount}/{!total})*360);
+var second = Math.floor(({!mcount}/{!total})*360);
+var third = 360-(first+second);
+
+var data = [first, second, third];
+
+var labels = ["High", "Medium", "Low"];
+var colors = ["#d43f3a", "#fdc431", "#357abd"];
+canvas2 = document.getElementById("piechart2");
+canvas = document.getElementById("piechart");
+var context = canvas.getContext("2d");
+var context2 = canvas2.getContext("2d");
+for (var i = 0; i < data.length; i++) {
+    drawSegment(canvas, context, i);
+    drawSegment2(canvas2, context2, i);
+}
+
+function drawSegmentLabel(canvas, context, i) {
+   context.save();
+   var x = Math.floor(canvas.width / 2);
+   var y = Math.floor(canvas.height / 2);
+   var angle = degreesToRadians(sumTo(data, i));
+
+   context.translate(x, y);
+   context.rotate(angle);
+   var dx = Math.floor(canvas.width * 0.5) - 10;
+   var dy = Math.floor(canvas.height * 0.05);
+
+   context.textAlign = "right";
+   var fontSize = Math.floor(canvas.height / 25);
+   context.font = fontSize + "pt Sans";
+
+  //context.fillText(labels[i], dx, dy);
+
+   context.restore();
+}
+
+
+function degreesToRadians(degrees) {
+    return (degrees * Math.PI)/180;
+}
+function sumTo(a, i) {
+    var sum = 0;
+    for (var j = 0; j < i; j++) {
+      sum += a[j];
+    }
+    return sum;
+}
+
+function drawSegment(canvas, context, i) {
+    context.save();
+    var centerX = Math.floor(canvas.width / 2);
+    var centerY = Math.floor(canvas.height / 2);
+    radius = Math.floor(canvas.width / 2);
+
+    var startingAngle = degreesToRadians(sumTo(data, i));
+    var arcSize = degreesToRadians(data[i]);
+    var endingAngle = startingAngle + arcSize;
+
+    context.beginPath();
+    context.moveTo(centerX, centerY);
+    context.arc(centerX, centerY, radius, 
+                startingAngle, endingAngle, false);
+    context.closePath();
+    context.lineWidth = 0;	
+    context.fillStyle = colors[i];
+    context.fill();
+
+    context.restore();
+
+    drawSegmentLabel(canvas, context, i);
+}
+
+function drawSegment2(canvas, context, i) {
+    context.save();
+    var centerX = Math.floor(canvas.width / 2);
+    var centerY = Math.floor(canvas.height / 2);
+    radius = Math.floor(canvas.width / 2);
+
+    var startingAngle = degreesToRadians(sumTo(data, i));
+    var arcSize = degreesToRadians(data[i]);
+    var endingAngle = startingAngle + arcSize;
+
+    context.beginPath();
+    context.moveTo(centerX, centerY);
+    context.arc(centerX, centerY, radius, 
+                0, 360, false);
+    context.closePath();
+    context.lineWidth = 0;	
+    context.fillStyle = '#FFFFFF';
+    context.fill();
+
+    context.restore();
+
+    drawSegmentLabel(canvas, context, i);
+}
+var offset = {!offset};
+		var reccount = {!reccount};
+		var countt = offset+reccount; 
+		document.getElementById("currentpage").innerText = offset +" to "+ countt +"("+ {!total}+")";
+		var back = 0;
+		var forward = 0;
+		var hrefback;
+		var hrefnext;
+		if (offset == 0)
+		{
+		document.getElementById('hrefback').style.display = 'none';
+		document.getElementById('hrefnext').style.display = 'block';
+		document.getElementById("backdiv").disabled = true;
+		document.getElementById("nextdiv").disabled = false;
+			forward = offset+10;
+			hrefnext = '{!$Page.ScanDetails}'+'?id='+ '{!JSENCODE(case.Id)}'+'&offset='+ forward;
+			document.getElementById("hrefnext").href= hrefnext;
+			
+		}
+		else if(offset>=10 &&reccount >= 10)
+		{
+		
+		document.getElementById("currentpage").style.width = '140px';
+		document.getElementById('hrefnext').style.display = 'block';
+		document.getElementById('hrefback').style.display = 'block';
+		document.getElementById("backdiv").disabled = false;
+		document.getElementById("nextdiv").disabled = false;
+			forward = offset+10;
+			back = offset-10;
+			hrefnext = '{!$Page.ScanDetails}'+'?id='+ '{!JSENCODE(case.Id)}'+'&offset='+ forward;
+			hrefback = '{!$Page.ScanDetails}'+'?id='+ '{!JSENCODE(case.Id)}'+'&offset='+ back;
+			document.getElementById("hrefnext").href= hrefnext;
+			document.getElementById("hrefback").href= hrefback;
+		}
+		else if(reccount <10 && offset>=10)
+		{
+		
+		document.getElementById('hrefback').style.display = 'block';
+		document.getElementById('hrefnext').style.display = 'none';
+		
+		document.getElementById("backdiv").disabled = false;
+		document.getElementById("nextdiv").disabled = true;
+			back = offset - 10;
+			hrefback = '{!$Page.ScanDetails}'+'?id='+ '{!JSENCODE(case.Id)}'+'&offset='+ back;
+			document.getElementById("hrefback").href= hrefback;
+		}
+
+</script>
+<!-- End Default Content REMOVE THIS -->
+</apex:page>

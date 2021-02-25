@@ -1,0 +1,26 @@
+<apex:page controller="XSSClass">
+<!-- Begin Default Content REMOVE THIS -->
+<h1>Congratulations</h1>
+Security XSS Testing
+<!-- End Default Content REMOVE THIS -->
+<img src="foo.img" onclick="digitsec.XSSClass.doRemote('Testing',na)"></img>
+
+<a href="{!xout}">test</a> 
+<apex:form >
+<apex:pageblock >
+                
+                  Input Here <apex:inputText value="{!xinput}" id="xinput"/>
+                <apex:commandButton value="Submit" action="{!doTest}" rerender="mymethod, mymethoda"/>
+
+                </apex:pageblock>
+                <apex:outputText id="mymethod" value="{!xout}" escape="false"/>
+
+				<apex:outputLink id="mymethoda" value="{!xout}">Testing</apex:outputLink>
+                <a id="xsstest" name="xsstest"></a>
+<script>function na(e,t)
+{
+    console.log('Here', e);
+    document.getElementById('xsstest').innerHTML = e;
+}</script>
+</apex:form>
+</apex:page>

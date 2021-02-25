@@ -1,0 +1,544 @@
+<apex:page showheader="false" sidebar="false" >
+<apex:includeScript value="{!$Resource.jquery}"/>
+<apex:includeScript value="{!$Resource.jquerytimer}"/>
+<apex:includeScript value="{!$Resource.globals}"/>
+
+<apex:includeScript value="{!$Site.BaseUrl}/lightning/lightning.out.js?v=2"/> 
+<b><apex:includeLightning /></b>
+<div id="lightning" ></div> 
+
+<div id="loader" style="width:200px; margin:0 auto;">
+<canvas id="circularLoader" width="200" height="200"></canvas>
+</div>
+<div id="success" style="text-align:center; color:#ea4b08; font-family:'Helvetica';font-size:20px;">Testing - Do not close this window.</div>
+<div id="loader">
+</div>
+<div style="width:330px; font-family:Segoe UI; margin:auto;">
+                
+                <div style="width:100%; float:left; padding-left:5px;">
+                <div class="abortbutton" onclick="Pausescan();">Pause</div>
+                <div class="startscanbutton" onclick="ResumeScan();">Resume</div>
+                <div class="abortbutton1" onclick="Stopscan();">Stop</div>
+                
+                
+                </div>
+                </div>
+
+
+<style>
+div.startscanbutton
+{
+background-color:#207b0c;
+float:left; 
+font: ProximaNovaRegular,Arial,sans-serif;; 
+position: relative; 
+width: 105px; 
+height: 40px; 
+padding: 0; 
+font-size: 22px; 
+color: white; 
+text-align: center; 
+text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); 
+border:solid 1px;
+cursor: pointer;
+}
+div.startscanbutton:hover
+{
+background-color:#1c9c00;
+}
+
+div.abortbutton
+{
+float:left; 
+font: Segoe UI; 
+width: 105px; 
+height: 40px; 
+padding: 0; 
+font-size: 22px; 
+color: white; 
+text-align:center; 
+text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); 
+border: solid 1px; 
+cursor: pointer;
+background-color:#878e4b;
+}
+div.abortbutton:hover
+{
+background-color: #677114;
+}
+
+div.abortbutton1
+{
+float:left; 
+font: Segoe UI; 
+width: 105px; 
+height: 40px; 
+padding: 0; 
+font-size: 22px; 
+color: white; 
+text-align:center; 
+text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); 
+border: solid 1px; 
+cursor: pointer;
+background-color:#a04242;
+}
+div.abortbutton1:hover
+{
+background-color: #f01d1d;
+}
+</style>
+
+
+<script>
+var fuzzcount = parseInt(sessionStorage.getItem('fuzzcount'));
+var fuzzcountlimit = parseInt(sessionStorage.getItem('fuzzcountlimit'));;
+var ctx = document.getElementById('circularLoader').getContext('2d');
+var al = 0;
+al = ((fuzzcount/fuzzcountlimit)*100).toFixed(1);
+var start = 4.72;
+var cw = ctx.canvas.width;
+var ch = ctx.canvas.height; 
+var diff;
+{
+	diff = ((al / 100) * Math.PI*2*10).toFixed(2);
+	ctx.clearRect(0, 0, cw, ch);
+	ctx.lineWidth = 17;
+	if(al > 75)
+	{
+	ctx.fillStyle = '#207b0c';
+	ctx.strokeStyle = '#207b0c';
+	}else if(al > 50)
+	{
+	ctx.fillStyle = '#136498';
+	ctx.strokeStyle = '#136498';
+	}else if(al > 25)
+	{
+	ctx.fillStyle = '#919c06';
+	ctx.strokeStyle = '#919c06';
+	}else
+	{
+	ctx.fillStyle = '#ea4b08';
+	ctx.strokeStyle = '#ea4b08';
+	}
+	ctx.textAlign = "center";
+	ctx.font="30px Helvetica";
+	ctx.fillText(al+'%', cw*.52, ch*.5+5, cw+12);
+	
+	ctx.beginPath();
+	ctx.arc(100, 100, 75, start, diff/10+start, false);
+	ctx.stroke();
+	if(al >= 100){
+	}
+}
+var vulnerabilities = $.parseJSON(sessionStorage.getItem('vulnerabilities'));
+var xssfunctionalURLs = $.parseJSON(sessionStorage.getItem('xssfunctionalURLs'));
+var soqlfunctionURLs = $.parseJSON(sessionStorage.getItem('soqlfunctionURLs'));
+var persistentxssfunctionalURLs = $.parseJSON(sessionStorage.getItem('persistentxssfunctionalURLs'));
+var aurapersistentxssfunctionalURLs = $.parseJSON(sessionStorage.getItem('aurapersistentxssfunctionalURLs'));
+var scannerrunning = sessionStorage.getItem('scannerrunning');
+var startfuzzing = sessionStorage.getItem('startfuzzing');
+var fuzzingcomplete = sessionStorage.getItem('fuzzingcomplete');
+var soqltests = sessionStorage.getItem('soqltests');
+var xsstests = sessionStorage.getItem('xsstests');
+var persistentxsstests = sessionStorage.getItem('persistentxsstests');
+var auratests = sessionStorage.getItem('auratests');
+var functionalURL;
+var postURL;
+var auranamespace;
+var auraappurl;
+var auracomponentname = '';
+var auraapplicationname = 'securityfuzzer';
+var vulncount = parseInt(sessionStorage.getItem('vulncount'));
+var currentPersistentXSSURL = '';
+window.blur();
+$.ajaxSetup({ cache: true});
+
+    var timer = $.timer(function() {
+        location.reload();
+         });
+   timer.set({ time : 48000, autostart : true });
+
+var exec = $.timer(function(){
+	runnext();
+});
+    exec.set({ time : 180, autostart : true });
+
+window.onerror = function(){
+sessionStorage.setItem('persistentxssfunctionalURLs', JSON.stringify(persistentxssfunctionalURLs));
+sessionStorage.setItem('xssfunctionalURLs', JSON.stringify(xssfunctionalURLs));   
+sessionStorage.setItem('soqlfunctionURLs', JSON.stringify(soqlfunctionURLs));
+
+    location.reload();
+    return true;
+}
+if(fuzzcount => fuzzcountlimit)
+{
+ sessionStorage.setItem('soqltests', 'no');
+                sessionStorage.setItem('xsstests', 'no');
+                sessionStorage.setItem('persistentxsstests', 'no');
+				sessionStorage.setItem('auratests', 'no');
+                sessionStorage.setItem('fuzzingcomplete', 'yes');
+             	document.location.href= "{!$Page.SecurityScan}";
+}
+
+function hookauraExceptions()
+{
+	document.getElementById = function(value){  }
+}
+
+
+function alert(uid)
+        {
+        timer.stop();
+        
+        if(auracomponentname !='')
+        {
+        
+        var app = auranamespace+':'+auraapplicationname;
+		var cmp = auranamespace+':'+auracomponentname;
+        	its = {}
+                its['exploit'] = 'Persistent Cross-site Scripting in lightning component ' + auracomponentname;
+                its['variable'] = 'NA';
+                its['url'] = btoa('$Lightning.use('+app+',function(){ $Lightning.createComponent('+cmp+', {}, "lightning", function(cmp) {});});');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '3';
+                its['code'] = 'NA';
+                its['severity'] = 'High';
+                vulnerabilities.push(its);
+                vulncount++;
+                sessionStorage.setItem('vulncount', vulncount);
+                sessionStorage.setItem('vulnerabilities',JSON.stringify(vulnerabilities));
+        return;
+        
+        }
+        if(currentPersistentXSSURL != '')
+        {
+        its = {}
+                its['exploit'] = 'Persistent Cross-site Scripting issue found @ ' + currentPersistentXSSURL;
+                its['variable'] = 'NA';
+                its['url'] = btoa(currentPersistentXSSURL);
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '3';
+                its['code'] = 'NA';
+                its['severity'] = 'High';
+                vulnerabilities.push(its);
+                vulncount++;
+                sessionStorage.setItem('vulncount', vulncount);
+                sessionStorage.setItem('vulnerabilities',JSON.stringify(vulnerabilities));
+                
+        
+        return;
+        }
+        var found = 0;          
+        $.each(xssfunctionalURLs, function(index, item) {
+        if(item.id == uid)
+        {
+        found = 1;
+        its = {}
+                its['exploit'] = 'Cross-site Scripting issue found @ ' + item.url +' via variable ' +item.variable;
+                its['variable'] = item.variable;
+                its['url'] = btoa(item.exploiturl);
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '3';
+                its['code'] = 'NA';
+                its['severity'] = 'High';
+                vulnerabilities.push(its);
+                vulncount++;
+                sessionStorage.setItem('vulncount', vulncount);
+                
+                 
+        }
+        
+        
+        });
+        
+        if(found == 0)
+        {
+        its = {}
+                its['exploit'] = 'Cross-site Scripting issue found @ ' + postURL +' via variable ' +uid;
+                its['variable'] = uid;
+                its['url'] = btoa(functionalURL);
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '3';
+                its['code'] = 'NA';
+                its['severity'] = 'High';
+                vulnerabilities.push(its);
+                vulncount++;
+                sessionStorage.setItem('vulncount', vulncount);
+        }
+        sessionStorage.setItem('vulnerabilities',JSON.stringify(vulnerabilities));
+        
+        }
+
+function loadlightningcomponents(namespace, applicationname, componentname)
+{
+var app = namespace+':'+applicationname;
+var cmp = namespace+':'+componentname;
+var cmp2 = namespace+':lights_out';
+$Lightning.use(app,function(){ $Lightning.createComponent(cmp, {}, "lightning", function(cmp) {$Lightning.createComponent(cmp2, {}, "lightning", function(cmp) { }); });});
+}
+function runnext(){
+exec.stop();
+if(scannerrunning == 'yes' && startfuzzing == 'yes' && fuzzingcomplete == 'no')
+{
+    if(soqltests == 'yes')
+    {
+        var vulnvariable;
+        var moretofuzz = 'no';
+        $.each(soqlfunctionURLs, function (index, item)
+        {
+		
+            if(item.fuzzed == 'no')
+            {
+                functionalURL = item.functionalURL;
+                vulnvariable = item.variable;
+                item.fuzzed = 'yes';
+                moretofuzz = 'yes';
+                return false;
+            }
+        });
+        sessionStorage.setItem('soqlfunctionURLs', JSON.stringify(soqlfunctionURLs));
+        if(moretofuzz == 'yes')
+        { 
+            var response;
+            fuzzcount++;
+            $.ajax({ type: "GET",   
+             url: functionalURL,
+             async: false,
+             crossDomain: true,
+             success : function(text)
+             {
+                response= text;
+                
+                html = $.parseHTML(response, document, false);
+                                
+                $.each( html, function(i, el){
+                if(el.id == 'contentWrapper')
+                {
+                var oNodeList = el.childNodes;
+                for (var i=0; i<oNodeList.length; i++) {
+               // var divs = oNodeList[i].getElementsByTagName("form");
+                var divs = oNodeList[i].getElementsByTagName("span");
+                for(var k = 0; k < divs.length; k++){
+                if( divs[k].id == 'theErrorPage:theError')// 'j_id0:j_id2')
+                {
+                    if(divs[k].innerHTML.match("(mismatched character \'\&lt\;EOF\&gt\;\' expecting \'\'\')"))
+                    {
+                    its = {}
+                    its['exploit'] = 'SOQL Injection found @ ' + functionalURL + ' via variable ' + vulnvariable;
+                    its['variable'] = vulnvariable;
+                    its['url'] = btoa(functionalURL);
+                    its['file'] = 'NA';
+                    its['line'] = 'NA';
+                    its['typed'] = '1';
+                    its['code'] = 'NA';
+                    its['severity'] = 'High';
+                    vulnerabilities.push(its);
+                    vulncount++;
+                    sessionStorage.setItem('vulncount', vulncount);
+                    sessionStorage.setItem('vulnerabilities',JSON.stringify(vulnerabilities));
+                    return false;
+                   }
+                }
+                }
+                }
+                
+                }
+                });
+                }
+             });
+             sessionStorage.setItem('soqlfunctionURLs', JSON.stringify(soqlfunctionURLs));
+             sessionStorage.setItem('fuzzcount', fuzzcount);
+             location.reload();
+        }else
+        if(moretofuzz == 'no')
+        {
+            sessionStorage.setItem('soqltests', 'no');
+            sessionStorage.setItem('xsstests', 'yes');
+            sessionStorage.setItem('persistentxsstests', 'no');
+            location.reload();
+        }
+
+    }
+    else if(xsstests == 'yes')
+        {
+        var postvariable = '';
+        var moretofuzz = 'no';
+        $.each(xssfunctionalURLs, function (index, item)
+        {
+            if(item.fuzzed == 'no')
+            {
+                functionalURL = item.functionalURL;
+                postURL = item.url;
+                postvariable = item.variable;
+                item.fuzzed = 'yes';
+                moretofuzz = 'yes';
+                return false;
+            }
+        });
+        sessionStorage.setItem('xssfunctionalURLs', JSON.stringify(xssfunctionalURLs));
+            if(moretofuzz == 'yes')
+            {   
+            fuzzcount++;
+            $.ajax({ type: "GET",   
+             url: functionalURL,
+             async: false,
+             crossDomain: true,
+             success : function(text)
+             {
+              var testdiv = document.createElement('div');
+                testdiv.style.visibility='hidden';
+                testdiv.id = 'exploitresponse1';// + uniqueid;
+                document.body.appendChild(testdiv);
+                response= text;
+                if(postvariable == 'postvariable')
+                {
+                $(testdiv).empty().html($('html',text).html());
+                }else
+                {
+                 $(testdiv).empty().html(text);
+                }
+                $(testdiv).remove();
+                 sessionStorage.setItem('fuzzcount', fuzzcount);
+                 sessionStorage.setItem('xssfunctionalURLs', JSON.stringify(xssfunctionalURLs));
+                 location.reload(); 
+              }
+              
+             });
+            sessionStorage.setItem('fuzzcount', fuzzcount); 
+            sessionStorage.setItem('xssfunctionalURLs', JSON.stringify(xssfunctionalURLs));
+            location.reload();          
+            }else
+            if(moretofuzz == 'no')
+            {
+                sessionStorage.setItem('soqltests', 'no');
+                sessionStorage.setItem('xsstests', 'no');
+                sessionStorage.setItem('persistentxsstests', 'yes');
+                location.reload();
+            }
+        }
+    else if(persistentxsstests == 'yes')
+    {
+    
+        var moretofuzz = 'no';
+        $.each(persistentxssfunctionalURLs, function (index, item)
+        {
+            if(item.fuzzed == 'no')
+            {
+                functionalURL = item.functionalURL;
+                item.fuzzed = 'yes';
+                moretofuzz = 'yes';
+                return false;
+            }
+        });
+        sessionStorage.setItem('persistentxssfunctionalURLs', JSON.stringify(persistentxssfunctionalURLs));
+            if(moretofuzz == 'yes')
+            { 
+                currentPersistentXSSURL = functionalURL;
+                fuzzcount++;
+                $.ajax({ type: "GET",   
+                 url: functionalURL,
+                 async: false,
+                 crossDomain: true,
+                 success : function(text)
+                {
+                var testdiv = document.createElement('div');
+                testdiv.style.visibility='hidden';
+                testdiv.id = 'exploitresponse2';// + uniqueid;
+                document.body.appendChild(testdiv);
+                response= text;
+                
+                $(testdiv).empty().html(response);
+                $(testdiv).remove();
+                sessionStorage.setItem('fuzzcount', fuzzcount);
+                sessionStorage.setItem('persistentxssfunctionalURLs', JSON.stringify(persistentxssfunctionalURLs));   
+                location.reload(); 
+              }
+
+             });
+             sessionStorage.setItem('fuzzcount', fuzzcount);
+             sessionStorage.setItem('persistentxssfunctionalURLs', JSON.stringify(persistentxssfunctionalURLs));
+              location.reload();
+            }else
+            if(moretofuzz == 'no')
+            {
+                sessionStorage.setItem('soqltests', 'no');
+                sessionStorage.setItem('xsstests', 'no');
+                sessionStorage.setItem('persistentxsstests', 'no');
+                sessionStorage.setItem('auratests', 'yes');
+                location.reload();
+            }
+        }
+		else if(auratests == 'yes')
+		{
+			var moretofuzz = 'no';
+			$.each(aurapersistentxssfunctionalURLs, function(index,item)
+			{
+			if(item.fuzzed == 'no')
+            {
+	            auranamespace = item.namespace;
+	            auracomponentname = item.component;
+	            auraappurl = item.appurl;
+				item.fuzzed = 'yes';
+	            moretofuzz = 'yes';
+	            return false;
+            }
+			});
+			
+			sessionStorage.setItem('aurapersistentxssfunctionalURLs', JSON.stringify(aurapersistentxssfunctionalURLs));
+            if(moretofuzz == 'yes')
+            {
+            fuzzcount++;
+            sessionStorage.setItem('aurapersistentxssfunctionalURLs', JSON.stringify(aurapersistentxssfunctionalURLs));
+            sessionStorage.setItem('fuzzcount', fuzzcount);
+			loadlightningcomponents(auranamespace, auraapplicationname, auracomponentname);
+			}
+			else if(moretofuzz == 'no')
+            {
+                sessionStorage.setItem('soqltests', 'no');
+                sessionStorage.setItem('xsstests', 'no');
+                sessionStorage.setItem('persistentxsstests', 'no');
+				sessionStorage.setItem('auratests', 'no');
+                sessionStorage.setItem('fuzzingcomplete', 'yes');
+             	document.location.href= "{!$Page.SecurityScan}";
+           }
+		}
+}
+else
+{
+	document.location.href= "{!$Page.SecurityScan}";
+}
+}
+function Pausescan()
+{
+document.getElementById('success').innerText = 'Scan Paused ...';
+exec.stop();
+timer.stop();
+window.stop();
+}
+function Stopscan()
+{
+document.getElementById('success').innerText = 'Scan Stoped ...';
+sessionStorage.setItem('abort','yes');
+document.location.href= "{!$Page.SecurityScan}";
+}
+function ResumeScan()
+{
+document.getElementById('success').innerText = 'Fuzzing ... do not close this window';
+location.reload();
+}
+
+
+
+
+
+</script>
+<apex:form id="form" >
+
+</apex:form>
+
+</apex:page>

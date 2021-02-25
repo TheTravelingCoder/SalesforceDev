@@ -9,7 +9,4 @@
     <tabs>standard-OtherUserProfile</tabs>
     <tabs>standard-CollaborationGroup</tabs>
     <tabs>standard-File</tabs>
-    <tabs>Getting_Started</tabs>
-    <tabs>Project__c</tabs>
-    <tabs>Invoice__c</tabs>
 </CustomApplication>

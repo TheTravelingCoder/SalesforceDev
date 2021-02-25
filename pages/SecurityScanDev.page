@@ -1,0 +1,2979 @@
+<apex:page controller="SecurityScan" action="{!init}" sidebar="true">
+<apex:includeScript value="{!$Resource.jquery}"/>
+<apex:includeScript value="{!$Resource.jsziputil}"/>
+<apex:includeScript value="{!$Resource.jquerytimer}"/>
+<apex:includeScript value="{!$Resource.globals}"/>
+<apex:includeScript value="{!$Resource.uglifyjs}"/>
+<apex:includeScript value="/support/console/22.0/integration.js"/>
+<apex:stylesheet value="{!$Resource.fontawesome}"/>
+<style>
+
+.dropbtn {
+    color: #aaa0a0;
+    font-size: 24px;
+    border: none;
+    cursor: pointer;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {background-color: #f1f1f1}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown:hover .dropbtn {
+    color: #00a1e0;
+}
+
+div.startscanbutton
+{
+
+background-color:#207b0c;
+float:left; 
+font: ProximaNovaRegular,Arial,sans-serif;; 
+position: relative; 
+width: 105px; 
+height: 40px; 
+padding: 0; 
+font-size: 22px; 
+color: white; 
+text-align: center; 
+text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); 
+border:solid 1px;
+cursor: pointer;
+padding-top:10px;
+}
+div.startscanbutton:hover
+{
+background-color:#1c9c00;
+}
+
+div.abortbutton
+{
+float:left; 
+font: Helvetica; 
+width: 105px; 
+height: 40px; 
+padding: 0; 
+font-size: 22px; 
+color: white; 
+text-align:center; 
+text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); 
+border: solid 1px; 
+cursor: pointer;
+background-color:#944242;
+padding-top:10px;
+}
+div.abortbutton:hover
+{
+background-color: #ab1d1d;
+}
+
+#overlay-back {
+    position   : absolute;
+    top        : 0;
+    left       : 0;
+    width      : 100%;
+    height     : 100%;
+    background : #000;
+    opacity    : 0.6;
+    filter     : alpha(opacity=60);
+    z-index    : 5;
+    display    : none;
+}
+
+#overlay {
+    position : absolute;
+    top      : 0;
+    left     : 0;
+    width    : 100%;
+    height   : 100%;
+    z-index  : 10;
+    display  : none;
+} 
+
+#overlay-back2 {
+    position   : absolute;
+    top        : 0;
+    left       : 0;
+    width      : 100%;
+    height     : 100%;
+    background : #000;
+    opacity    : 0.6;
+    filter     : alpha(opacity=60);
+    z-index    : 5;
+    display    : none;
+}
+
+#overlay2 {
+    position : absolute;
+    top      : 0;
+    left     : 0;
+    width    : 100%;
+    height   : 100%;
+    z-index  : 10;
+    display  : none;
+} 
+
+#overlay-back3 {
+    position   : absolute;
+    top        : 0;
+    left       : 0;
+    width      : 100%;
+    height     : 100%;
+    background : #000;
+    opacity    : 0.6;
+    filter     : alpha(opacity=60);
+    z-index    : 5;
+    display    : none;
+}
+
+#overlay3 {
+    position : absolute;
+    top      : 0;
+    left     : 0;
+    width    : 100%;
+    height   : 100%;
+    z-index  : 10;
+    display  : none;
+} 
+
+#overlay-back4 {
+    position   : absolute;
+    top        : 0;
+    left       : 0;
+    width      : 100%;
+    height     : 100%;
+    background : #000;
+    opacity    : 0.6;
+    filter     : alpha(opacity=60);
+    z-index    : 5;
+    display    : none;
+}
+
+#overlay4 {
+    position : absolute;
+    top      : 0;
+    left     : 0;
+    width    : 100%;
+    height   : 100%;
+    z-index  : 10;
+    display  : none;
+}
+
+#overlay-back5 {
+    position   : absolute;
+    top        : 0;
+    left       : 0;
+    width      : 100%;
+    height     : 100%;
+    background : #000;
+    opacity    : 0.6;
+    filter     : alpha(opacity=60);
+    z-index    : 5;
+    display    : none;
+}
+
+#overlay5 {
+    position : absolute;
+    top      : 0;
+    left     : 0;
+    width    : 100%;
+    height   : 100%;
+    z-index  : 10;
+    display  : none;
+}
+
+
+</style>
+<div id="overlay-back2"></div>
+<div id="overlay2">
+<div id="basicModalContent" name="basicModalContent" style=" display:block; position:absolute; /* width: 65%; */ height: auto; background-color: rgba(253, 253, 253, 0.98); z-index: 400; margin-top: 80px; margin-left:250px">
+
+<div style="margin: 50px;opacity: 9.9; width: 90%;display: block;color: #888484;font-family: 'Helvetica' sans-serif;font-size: 16px;font-weight: 600;">
+  <div>
+  <h2>Security scan starting - do not close this browser window. </h2><br></br><br></br>
+  </div>
+<div style="border-bottom:1px solid #ccc;">
+  <h2>An email will be sent to you once the scan completes. </h2><br></br><br></br>
+  </div>
+<br></br><br></br>
+<div class="startscanbutton" onclick="$('#overlay2,#overlay-back2').fadeOut(1000);  beginscan();">OK</div>
+<div class="abortbutton" onclick="updateMessages('+ Scan cancelled ...');$('#overlay2,#overlay-back2').fadeOut(1000); document.getElementById('scanspinner').style.display = 'none';">Cancel</div>
+<br></br><br></br>
+</div>
+</div>
+</div>
+
+
+<div id="overlay-back3"></div>
+<div id="overlay3">
+<div id="basicModalContent" name="basicModalContent" style=" display:block; position:absolute; /* width: 65%; */ height: auto; background-color: #ffffff; z-index: 400; margin-top: 80px; margin-left:250px; border-radius:1%;">
+<a href="#" onclick="javascript:$('#overlay3,#overlay-back3').fadeOut(1000);" id="modalhelpclose" style="position:relative; float: right;font-family: 'Helvetica' sans-serif;font-size: 16px;padding-right: 7px;font-weight: 700;/* border: 1px solid maroon; */text-decoration: none;color: #837F7F; " onmouseover="this.style.color='#000';" onmouseout="this.style.color='#837F7F';">x</a>
+<div style="margin:30px;opacity: 9.8; /* background-color: #c0c0c0; */ width: 90%;display: block;color: #888484;font-family: 'Helvetica' sans-serif;font-size: 13px;">
+
+  <div style="border-bottom:1px solid #aaa0a0;">
+  <h2>Simple two step process to run the scanner</h2><br></br>
+  </div>
+
+  <span style="     /* color: #000; */">1.</span> Simply Click on Scan and leave the browser window open<br></br>
+  <span style="     /* color: #000; */">2.</span> You will receive an email once the scan completes<br></br>
+  <br></br>
+
+  These steps are shown in the following figure: <br></br><br></br>
+<img src="{!$Resource.scanhelp}" style="border: 2px solid #888;width: 540px;" />
+<br></br>
+<br></br>
+<div>
+  <h2>Support - contact@digitsec.com or 206.659.9521</h2><br></br>
+  </div>
+</div>
+</div>
+</div>
+
+<div id="overlay-back4"></div>
+<div id="overlay4">
+<div id="basicModalContent" name="basicModalContent" style=" display:block; position:absolute; /* width: 65%; */ height: auto; background-color: rgba(253, 253, 253, 0.98); z-index: 400; margin-top: 80px; margin-left:250px">
+<a href="#" onclick="javascript:$('#overlay4,#overlay-back4').fadeOut(1000);" id="modalhelpclose" style="position:relative; float: right;font-family: 'Helvetica' sans-serif;font-size: 16px;padding-right: 7px;font-weight: 700;/* border: 1px solid maroon; */text-decoration: none;color: #837F7F; " onmouseover="this.style.color='#000';" onmouseout="this.style.color='#837F7F';">x</a>
+<div style="margin: 50px;opacity: 9.9; /* background-color: #c0c0c0; */ width: 90%;display: block;color: #888484;font-family: 'Helvetica' sans-serif;font-size: 16px;font-weight: 600;">
+
+  <div style="border-bottom:1px solid #aaa0a0;">
+  <h2>Browser not supported...</h2><br></br><br></br>
+  </div>
+
+  <span>1.</span> Only Google Chrome or Mozilla FireFox are supported<br></br>
+  <br></br>
+  <br></br><br></br>
+
+  
+</div>
+</div>
+</div>
+
+<div id="overlay-back5"></div>
+<div id="overlay5">
+<div id="basicModalContent" name="basicModalContent" style=" display:block; position:absolute; /* width: 65%; */ height: auto; background-color: rgba(253, 253, 253, 0.98); z-index: 400; margin-top: 80px; margin-left:250px">
+
+<div style="margin: 50px;opacity: 9.9; width: 90%;display: block;color: #888484;font-family: 'Helvetica' sans-serif;font-size: 16px;font-weight: 600;">
+  <div>
+  <h2>Addition configuration steps are needed to use the scanner</h2><br></br><br></br>
+  </div>
+<div style="border-bottom:1px solid #ccc;">
+  
+  </div>
+<br></br><br></br>
+<div class="startscanbutton" onclick="$('#overlay5,#overlay-back5').fadeOut(1000); configure();">Proceed</div>
+<div class="abortbutton" onclick="updateMessages('+ Additional configuration steps must be completed to proceed ...');$('#overlay5,#overlay-back5').fadeOut(1000); document.getElementById('scanspinner').style.display = 'none';">Cancel</div>
+<br></br><br></br>
+</div>
+</div>
+</div>
+
+
+<a id="some-button" href="#"></a>
+<div id="overlay-back"></div>
+<div id="overlay">
+<div id="basicModalContent" name="basicModalContent" style=" display:block; position:absolute; /* width: 65%; */ height: auto; background-color: #efede4; z-index: 400; margin-top: 80px; margin-left:250px; border-radius:6px;">
+<a href="#" id="modalclose" style="position:relative; float: right;font-family: 'Helvetica' sans-serif;font-size: 18px;margin-right:6px; font-weight: 700;/* border: 1px solid maroon; */text-decoration: none;color: #FF0909;" onclick="javascript:$('#overlay,#overlay-back').fadeOut(1000);document.location.reload();" onmouseover="this.style.color='#000';" onmouseout="this.style.color='#FF0909';">x</a>
+<div style="margin: 50px;opacity: 9.9; /* background-color: #c0c0c0; */ width: 90%;display: block;color: #888484;font-family: 'Helvetica' sans-serif;font-size: 16px;font-weight: 600;">
+ <div style="border-bottom:1px solid #aaa0a0;">
+  <h2>One additional step required to configure the security scanner.</h2><br></br><br></br>
+  </div>
+<div style="float:left; width:420px; padding:10px; margin:10px;">
+ 
+  <br></br>
+Go to <a href="/0rp/e?retURL=" target="_blank" style="
+    text-decoration: none; color:#2687E8;
+">Setup &gt; Security Controls &gt; Remote site settings</a><br></br><br></br>
+  <span>1.</span> Type any name in "Remote Site Name"<br></br>
+  <div id="remoteurl"></div>
+  <span>3.</span> Click on "Save"<br></br><br></br>
+
+  These steps are shown in the following figure: <br></br><br></br>
+<img src="{!$Resource.mdapiremote}" style="border: 2px solid #888;width: 330px; float:right;" /> 
+</div>
+</div>
+</div>
+</div>
+
+
+<script>
+ Visualforce.remoting.timeout = 120000;
+ function updateMessages(message)
+        {
+        $('#statusupdates').val($('#statusupdates').val() + "\n" + message);
+       	var textarea = document.getElementById('statusupdates');
+		textarea.scrollTop = textarea.scrollHeight;
+        }
+
+$('#helpbutton').on('click', function () {
+    $('#overlay3, #overlay-back3').fadeIn(500);
+});
+
+$('#modalclose').on('click',function(){
+$('#overlay,#overlay-back').fadeOut(1000);
+});
+
+$('modalhelpclose').on('click',function(){
+$('#overlay3,#overlay-back3').fadeOut(1000);
+});
+
+        if ((navigator.userAgent.search('Chrome') >= 0) || (navigator.userAgent.search('Firefox') >= 0))
+        {
+        
+         }
+         else
+         {
+          $('#overlay4, #overlay-back4').fadeIn(500);
+         }
+
+function resetSessionStorage()
+        {
+           sessionStorage.setItem('scannerrunning', 'no');
+           sessionStorage.setItem('startfuzzing','no');
+           sessionStorage.setItem('fuzzingcomplete','no');
+           sessionStorage.setItem('soqltests','no');
+           sessionStorage.setItem('auratests','no');
+           sessionStorage.setItem('xsstests','no');
+           sessionStorage.setItem('persistentxsstests','no');
+           sessionStorage.setItem('vulncount', 0);
+           sessionStorage.setItem('vulnerabilities','[]');
+           sessionStorage.setItem('xssfunctionalURLs','[]');
+           sessionStorage.setItem('persistentxssfunctionalURLs','[]');
+           sessionStorage.setItem('aurapersistentxssfunctionalURLs','[]');
+           sessionStorage.setItem('soqlfunctionURLs','[]');
+           sessionStorage.setItem('abort','no');
+           sessionStorage.setItem('fuzzcount',0);
+        }
+        
+        function handlevulnResult(result, event)
+        {
+        if (event.status && !(result.indexOf('failure') !=-1)) {
+      	var rresult = result.replace(/\&qu/gi, '"');
+        rresult = rresult.replace(/ot;/gi, '');
+        var resultstring = JSON.parse(rresult);
+        if(resultstring.returnurl !='')
+        {
+        updateMessages('+ Saving '+ sessionStorage.getItem('vulncount') + ' Vulnerabilities ...');
+        updateMessages('+ Vulnerabilities saved... '); 
+        updateMessages('+ View the scan results ' + resultstring.returnurl ); 
+        document.getElementById('scanresults').style.display = 'block';
+        var ax = document.getElementById('scanresults'); 
+        ax.href = resultstring.returnurl;                
+        document.getElementById('scanspinner').style.display = 'none';                                                     
+        resetSessionStorage();
+        return;
+        }
+vulnsjsn = sessionStorage.getItem('vulnerabilities');
+var savevulns = JSON.parse(vulnsjsn);
+var postvulns = [];
+var itr = 0;
+var itrs = 0;
+vulnoffset = parseInt(resultstring.offset);
+$.each(savevulns, function (index, item){
+if(itr > vulnoffset)
+{
+if(itrs < 50)
+{
+postvulns.push(item);
+itrs++;
+}
+else{return;}
+}
+itr++;
+
+});
+
+vulnoffset = vulnoffset+itrs;
+
+if(itrs < 50)
+{
+savenextVulns(JSON.stringify(postvulns),resultstring.caseId,'1', vulnoffset);
+}
+else
+	{
+	
+	savenextVulns(JSON.stringify(postvulns),resultstring.caseId,'0', vulnoffset);
+	}
+}
+	else
+        {
+        updateMessages('!  Failed to save vulnerabilities... '); 
+        updateMessages('!  Error ' + result ); 
+        }  
+        result = '';
+        }
+function configure()
+{
+updateMessages('!  Please wait for this page to refresh ... ');
+ if(isSetup == '1')
+{
+try
+{
+ {!JSENCODE(dotPrefix)}SecurityScan.xcreateFuzzedSObjects(xhandleconfigResult/*, { buffer: true, escape: true, timeout: 120000 }*/);
+}
+catch(ex)
+	{
+	updateMessages('! Exception Creating Fuzzed Objects 1... ' + ex);
+	} 
+}
+}
+
+function xhandleconfigResult(result, event)
+        {
+        if(JSON.stringify(digitsecsettings[3].value) == 'true')
+        {
+        try
+{
+        if (event.status) {
+		{!JSENCODE(dotPrefix)}SecurityScan.createFuzzedSObjects(handleconfigResult/*, { buffer: true, escape: true, timeout: 120000 }*/);
+        } else {
+       updateMessages('+ Error Creating Fuzzed Objects ... ' + event.status);
+        }  
+        }
+catch(ex)
+	{
+		updateMessages('! Exception Creating Fuzzed Objects 1... ' + ex);
+		document.location.reload();
+	}       
+	}else
+	{
+		document.location.reload();
+	}
+	
+}
+
+
+
+function handleconfigResult(result, event)
+        {
+	        try
+			{
+	        if (event.status) {
+	        	{!JSENCODE(dotPrefix)}SecurityScan.generatecustomFuzzObjects(0,fuzzobjectslimit,handleFuzzResult);
+	        } else {
+	      	 updateMessages('+ Error Creating Fuzzed Objects ... ' + event.status);
+	        }  
+	        }
+			catch(ex)
+			{
+				updateMessages('! Exception Creating Fuzzed Objects 1... ' + ex);
+				document.location.reload();	
+			}       
+        }
+        
+        function handleFuzzResult(result, event)
+        {
+        try
+        {
+        if (event.status && result>0) {
+        updateMessages('+ Creating ' + result + ' Fuzzed Objects ... ' );
+        {!JSENCODE(dotPrefix)}SecurityScan.generatecustomFuzzObjects(result,result+fuzzobjectslimit,handleFuzzResult);  	
+        }else 
+        if(event.status && result == 0)
+        {
+        document.location.reload();
+        }
+        }
+        catch(ex)
+        {
+                updateMessages('! Error saving fuzzed objects ... ' + ex);
+                updateMessages('! Skipping persistent checks ... ');
+                document.location.reload();
+                
+        }
+        }
+        
+        function handlehearBeat(result, event)
+        {
+        if(event.status)
+        {
+     //   document.location.reload();
+        }
+        
+        }
+function savenextVulns(postvns, caseId, done, offset)
+{
+{!JSENCODE(dotPrefix)}SecurityScan.logVulns(postvns,caseId, done, offset, handlevulnResult);
+}
+
+if(sessionStorage.getItem('fuzzingcomplete') == 'no')
+{
+    resetSessionStorage();
+           
+}
+else if(sessionStorage.getItem('fuzzingcomplete') == 'yes')
+{
+vulnsjsn = sessionStorage.getItem('vulnerabilities');
+var savevulns = JSON.parse(vulnsjsn);
+var postvulns = [];
+vulnoffset = 0;
+$.each(savevulns, function (index, item){
+if(vulnoffset < 50)
+{
+postvulns.push(item);
+vulnoffset++;
+}else
+{
+return;
+}
+
+});
+if(vulnoffset < 50)
+{
+{!JSENCODE(dotPrefix)}SecurityScan.logVulns(JSON.stringify(postvulns),'0','1',vulnoffset,handlevulnResult);
+}
+else{
+{!JSENCODE(dotPrefix)}SecurityScan.logVulns(JSON.stringify(postvulns),'0','0',vulnoffset-1,handlevulnResult);
+}
+}
+/* Limits*/
+        var fuzzobjectslimit = 50;
+        try{
+        var fuzzcountlimit = parseInt(digitsecsettings[7].value);
+        }catch(ex){
+        var fuzzcountlimit = 500;
+        }
+        var limit = 5;
+        var currentexploitcount = 0;
+/* Limits*/      	 
+        var files = [];
+        var scauniqueint = 0;
+        var BaseURL = document.location.href;
+        var slicess = BaseURL.indexOf('apex/');
+        var fBaseURL = BaseURL.slice(0, slicess);
+        var baseSFHost = '{!JSENCODE(baseSFHost)}';
+        var lBaseURL = baseSFHost.split('.');
+        lBaseURL = lBaseURL[0].split('--');
+        lBaseURL = lBaseURL[0]+'.lightning.force.com/';
+        var uniqueid = 0;
+        var vulnoffset = 0;
+        var foundControllers = 0;
+        var scaf = [];
+        var scachecks = 0;
+        if(document.location.hash) {
+        console.log(document.location.hash);
+        var scachecks = 1;
+        }
+        var aurasecuredocumentFuncs =["addEventListener","body","childNodes","cookie","createComment","createDocumentFragment","createElement","createTextNode","documentElement","getElementsByClassName","getElementById","getElementsByName","getElementsByTagName","head","nodeType","querySelector","querySelectorAll","title"];
+		var aurasecurewindowFuncs =["addEventListener","document","getComputedStyle","location","navigator","open","setInterval","setTimeout","window"];
+		var aurabannedOperators = ["instanceof"];
+        var stringliterals = [];
+        var soqlparsedstrings = [];
+        var vulnerabilities =[];
+        var activeexploitrequests =[];
+        var postfuzzerinputs = [];
+        var functioncalltrace = [];
+        var vulncount =0;
+        var xfunctioncalls =[];
+        var xdefs = [];
+        var auracomponentcode =[];
+        var aurasname =[];
+        var SOQLInjection = "(select|insert|update|delete|restore)+\\s+\\w+\\,*\\s*\\s+(from)+\\s+\\w+\\s+(where)+\\s+\\w+\\s*\=+\\s*\'+\\s*\\++";
+        var escapeXSS = "\\s*\\w*\\s*(escape)+\\s*=\\s*\"+(false)+\"+";
+        var auraescapeXSS = "\\s*\\w*\\s*<(aura)+\:+(unescapedhtml)+";
+        var innerJSBlocks = "\\s*\\w*\\s*\\.+(html)+\\s*\\(+\\s*\\'*\\\"*\\{+\\!+(\?\!(jsencode)+)";
+        var innerHTMLBlocks = "\\s*\\w*\\s*\\.+(innerhtml)+\\s*\\=+\\s*\\w*\\s*\\\+*\\s*\\w*\\s*\\'*\\\"*\\{+\\!+(\?\!(jsencode)+)";
+        var dcUsage = "\\s*\\w*\\s*(document)+\\.+(getElementById)+\\s*\\(+";
+        var dcUsage1 = "\\s*\\w*\\s*(document)+\\.+(getElementsByName)+\\s*\\(+";
+        var dcUsage2 ="\\s*\\w*\\s*(new)+\\s+(XMLHttpRequest)+\\s*\\(+";
+        var dcUsage3 = "\\s*\\w*\\s*(document)+\\.+";
+        var dcUsage4 = "\\s*\\w*\\s*(window)+\\.+";
+        var docgetUsage = [{"id":"1", "sig":"\\s*\\w*\\s*(document.+getElementById)+\\s*\\(+"}, 
+        				   {"id":"2", "sig":"\\s*\\w*\\s*(document)+\\.+(getElementsByName)+\\s*\\(+"}];
+        var ifnot = "(\\b\\s*if\\s*\\b\\s*\\(+\\!+)";
+        var codeblocks = [];
+        var startlineregex = "(\{)";
+        var endlineregex = "(\})";
+        var xssfunctionalURLs =[];
+        var soqlfunctionURLs = [];
+        var persistentxssfunctionalURLs = [];
+        var aurapersistentxssfunctionalURLs = [];
+        var scancompleteTimeoutId;
+        var foundfuncs = [];
+        var SalesforceNamespace = '{!JSENCODE(dotPrefix)}';
+        var MetaDataFilenames;
+        var fuzzedObjects; 
+
+        if(SalesforceNamespace != '')
+        {
+            SalesforceNamespace = SalesforceNamespace.substring(0,(SalesforceNamespace.length-1)) + '__';
+        }
+        
+        var cryptofuncs = [
+        {"id":"1", "func":"\\s*\\w*\\s*(crypto\\.encrypt\\s*\\(","key_param":"2", "iv_param":"3", "namespace":"system", "class":"crypto","method":"encrypt", "rawfunctionsig":"crypto.encrypt"}
+        ];
+        
+        var crudfuncs = [
+        {"id":"1", "func":"insert", "flag":"DML"},
+        {"id":"2", "func":"update", "flag":"DML"},
+        {"id":"3", "func":"delete", "flag":"DML"},
+        {"id":"4", "func":"undelete", "flag":"DML"},
+        {"id":"5", "func":"merge", "flag":"DML"},
+        {"id":"6", "func":"select", "flag":"DML"}
+        ];
+         var temppagelist = [];
+		 var tempclasslist = [];
+		 var temppageMetadatalist =[];
+		 var tempclassMetadatalist = [];
+        var pcrudfuncs = [
+        {"id":"1", "func":["Schema", "sObjectType","*", "fields", "*", "isaccessible"],"funcsig":"", "crudfuncs":["6"]},
+        {"id":"2", "func":["Schema", "sObjectType","*", "fields", "*", "iscreateable"],"funcsig":"", "crudfuncs":["1"]},
+        {"id":"3", "func":["Schema", "sObjectType","*", "fields", "*", "isupdateable"],"funcsig":"", "crudfuncs":["2", "5"]},
+        {"id":"4", "func":["Schema", "sObjectType","*", "fields", "*", "isdeleteable"],"funcsig":"", "crudfuncs":["3", "4"]},
+        {"id":"5", "func":["Util", "AccessController","isauthorizedtoview"],"funcsig":"", "crudfuncs":["6"]},
+        {"id":"6", "func":["Util", "AccessController","isauthorizedtocreate"],"funcsig":"", "crudfuncs":["1"]},
+        {"id":"7", "func":["Util", "AccessController","isauthorizedtoupdate"],"funcsig":"", "crudfuncs":["2","5"]},
+        {"id":"8", "func":["Util", "AccessController","isauthorozedtodelete"],"funcsig":"", "crudfuncs":["3","4"]}
+        ];
+        
+        var DMLfuncs = [{"DMLfunc":"1","protectfuncs":[{"pfunc":"2"},{"pfunc": "3"}, {"pfunc": "4" }]},
+        {"DMLfunc":"5","protectfuncs":[{"pfunc":"6"},{"pfunc": "7"}, {"pfunc": "8" }]},
+        {"DMLfunc":"9","protectfuncs":[{"pfunc":"10"},{"pfunc":"11"},{"pfunc": "12"}]},
+        {"DMLfunc":"13","protectfuncs":[{"pfunc":"14"}]}
+        ];
+        
+        var interestingfuncs = [{"id": "1", "func":"\\s*\\w*\\s*(\\binsert\\s+\\b|\\bundelete\\s+\\b|\\binsert\\s*\\(\\b|\\bundelete\\s*\\(\\b)"},
+            {"id": "2", "func":"\\s*\\w*\\s*(iscreateable\\s*\\()"},
+            {"id": "3", "func":"\\s*\\w*\\s*(isauthorizedtocreate\\s*\\()"},
+            {"id": "4", "func":"\\s*\\w*\\s*(insertasuser\\s*\\()"},
+            {"id": "5", "func":"\\s*\\w*\\s*(\\bupdate\\s+\\b|\\bmerge\\s+\\b|\\bupdate\\s*\\(\\b|\\bmerge\\s*\\(\\b)"},
+            {"id": "6", "func":"\\s*\\w*\\s*(updateasuser\\s*\\()"},
+            {"id": "7", "func":"\\s*\\w*\\s*(isauthorizedtoupdate\\s*\\()"},
+            {"id": "8", "func":"\\s*\\w*\\s*(isupdateable\\s*\\()"},
+            {"id": "9", "func":"(\\b\\s*delete\\s+\\b|\\bdelete\\s*\\(\\b)"},
+            {"id": "10", "func":"\\s*\\w*\\s*(isdeleteable\\s*\\()"},
+            {"id": "11", "func":"\\s*\\w*\\s*(deleteasuser\\s*\\()"},
+            {"id": "12", "func":"\\s*\\w*\\s*(isauthorozedtodelete\\s*\\()"},
+           /* {"id": "13", "func":"\\s*\\w*\\s*(select)+\\s+\\w+\\,*\\s*\\s+(from)+\\s+\\w+\\s+(where)+\\s+\\w+\\s*\=+\\s*"},*/
+            {"id": "14", "func":"\\s*\\w*\\s*(isaccessible\\s*\\()"}
+            ];
+        
+        var apexControllerobjs = [
+        {"regularex":"(\\<apex\\:page controller\\=)","rawobject":"\\<apex\:page controller\\=", "method": "POST"},        
+        {"regularex":"(\\<apex\\:page standardcontroller\\=)","rawobject":"\\<apex\:page standardcontroller\\=", "method": "POST"}
+        ];
+        
+        var requestobjects = [
+        {"regularex":"(\\!\\\\$request)","rawobject":"!$request.", "method": "GET"},        
+        {"regularex":"(\\!\\\\$currentpage\\.parameters)","rawobject":"!$currentpage.parameters.", "method": "GET"},
+        {"regularex":"(\\!\\\\$currentpage)","rawobject":"!$currentpage.", "method": "GET"}
+        ];
+        
+        var requestApexobjects = [
+        {"regularex":"(apexpages\\.currentpage\\(\\)\\.getparameters\\(\\)\\.get)","rawobject":"apexpages\.currentpage\(\)\.getparameters\(\)\.get", "method":"GET"}
+        ];
+        
+         var soqlfuzzer = [{"payload":"'","errorelem":"theErrorPage\\\\:theError","error":"(mismatched character \'\&lt\;EOF\&gt\;\' expecting \'\'\')"}];
+         var needanalyzed = 1;        
+         var fuzzedinputs = [];
+         var iscallbackdone;
+         var myTimerVar; 
+         var currentasyncid;       
+         var asynccallid = 0 ;
+         var asyncreturnid = 0;
+         var RemoteSiteError = "{!JSENCODE(RemoteSiteError)}";
+         var baseSFURL = "{!JSENCODE(baseSFURL)}";
+         var isDemo = "{!JSENCODE(isDemo)}";
+         var isSetup = "{!JSENCODE(isSetup)}";
+         document.getElementById("remoteurl").innerText = "2. Copy & Paste " + baseSFURL + ' in "Remote Site URL"';
+         
+         if(isSetup == '1')
+         {
+         	$('#overlay5, #overlay-back5').fadeIn(500);
+         }
+         
+         if(RemoteSiteError != "0")
+         {
+     	    console.log('! Error retrieving metadata ...');
+            console.log('! Error ...' + RemoteSiteError);
+         	$('#overlay, #overlay-back').fadeIn(500);
+         }
+         
+       
+         var currentPersistentXSSURL="";
+        
+         var x = 0;
+         var y = 0;
+         var tempmdclassfiles =[];
+         var tempmdpagefiles =[];
+         var tempclassMetadata = [];
+         var temppageMetadata = [];
+		 var securitysettingsfile = [];
+		 var remotesettingsfile = [];
+		 var CSPSettings = [];
+		 var CORSettings = [];
+		 var gremotesettingsfile = [];
+		 var gCSPSettings = [];
+		 var gCORSettings = [];
+         var asyncids = [];
+		 var numberofpagefiles = 0;
+		 var numberofclassfiles = 0;	
+		 var numberofpagefilesoffset = 0;
+		 var numberofclassfilesoffset = 0;
+		if(isSetup == '0')
+         {
+			{!JSENCODE(dotPrefix)}SecurityScan.listMetadataVFPages(handleMetaDataVFPages);			
+
+		}
+		
+		function handleMetaDataClases(result, event)
+         {
+         updateMessages('+ Generating metadata for Apex classes ...');
+         if (event.status && !(result == '0')) 
+         {		
+         		updateMessages('+ Metadata for Apex classes generated ...');
+         		updateMessages('+ Parsing metadata for Apex classes ...')
+         		$.each(result, function(i,obj)
+         		{
+         		if(obj.Name != 'MetadataService')
+         		if(obj.Name != 'SecurityScan')
+         		if(obj.Name != 'SecurityScanDev')
+         		if(obj.Name != 'SecurityFuzzerDev')
+         		if(obj.Name != 'ScanDetails')
+				if(obj.Name != 'ReportDownload')
+				if(obj.Name != 'MetadataRetrieveController')
+				if(obj.Name != 'AuditAccessControl')
+         		 {
+         			item = {}
+         			item["id"] = obj.Name;
+         			item["file"] = 'classes/' + obj.Name + '.cls';
+         			item["fileid"] = obj.Id;
+         			item["isApexPage"] = '0';
+         			item["apexControllers"] = []; 
+         			item["initaction"] = '';
+         			MetaDataFilenames.push(item);
+         		}
+         		});
+            
+			{!JSENCODE(dotPrefix)}SecurityScan.getFuzzedObjects(handleFuzzedObjects);
+         } 
+         else
+         {
+        	 updateMessages('!  Error retriveing metadata ...' + event.status);
+        	 updateMessages('!  Error ... ' + event.message);
+        	 updateMessages('!  Function Name ... ' + event.method);
+         }
+         return;
+         }
+         
+         function handleMetaDataVFPages(result, event)
+         {
+         updateMessages('+ Generating metadata for Visualforce pages ...');
+         if (event.status && !(result == '0')) 
+         {		MetaDataFilenames = [];
+         		updateMessages('+ Metadata for Visualforce pages generated ...');
+          		updateMessages('+ Parsing metadate for Visualforce pages ...');
+         		$.each(result, function(i,obj)
+         		{
+         			if(obj.fullName != 'metadataretrieve')
+         			if(obj.fullName != 'SecurityScan')
+         			if(obj.Name != 'SecurityFuzzerDev')
+         			if(obj.Name != 'SecurityScanDev')
+         			if(obj.fullName != 'SecurityScanDebug')
+         			if(obj.fullName != 'ScanDetails')
+         			if(obj.fullName != 'DownloadReport')
+         			if(obj.fullName != 'SecurityFuzzer')
+         			if(obj.fullName != 'AuditAccessControl')
+         			if(obj.fullName != 'DigitSecS4Settings')
+         			{
+	         			item = {}
+	         			item["id"] = obj.fullName;
+	         			item["file"] = 'pages/' + obj.fullName + '.page';
+	         			item["fileid"] = obj.id;
+	         			item["isApexPage"] = '1';
+	         			item["apexControllers"] = []; 
+	         			item["initaction"] = '';
+	         			MetaDataFilenames.push(item);
+	         		}
+         		});
+				{!JSENCODE(dotPrefix)}SecurityScan.listMetadataClasses(handleMetaDataClases);
+                } 
+         else
+         {
+        	 updateMessages('!  Error retriveing metadata ...' + event.status);
+        	 updateMessages('!  Error ... ' + event.message);
+        	 updateMessages('!  Function Name ... ' + event.method);
+         }
+         return;
+         }
+		
+		function handleMetaDataFiles(result, event)
+         {
+         updateMessages('+ Generating source code metadata ...');
+         if (event.status && !(result == '0')) 
+         {
+                MetaDataFilenames = $.parseJSON(atob(result));
+                updateMessages('+ Source code metadata generated ...');
+                {!JSENCODE(dotPrefix)}SecurityScan.getFuzzedObjects(handleFuzzedObjects);
+         } 
+         else
+         {
+        	 updateMessages('!  Error retriveing metadata ...' + event.status);
+        	 updateMessages('!  Error ... ' + result.message);
+         }
+         return;
+         }
+		
+		
+		 function handleFuzzedObjects(result, event)
+         {
+         try
+         {
+         
+	         updateMessages('+ Fetching fuzzed objects ...');
+	         if (event.status && !(result == '0')) 
+	         {
+				fuzzedObjects = $.parseJSON(atob(result));
+				
+	 			updateMessages('+ Fuzzed objects received ...');
+	 			updateMessages('+ Scanner ready ...');
+	         } 
+	         else
+	         {
+	        	 updateMessages('!  Error retrieving fuzzed objects ...' + event.status);
+	        	 updateMessages('!  Error ... ' + event.message); 
+	        	 fuzzedObjects = $.parseJSON('[]');
+	         }
+	         }
+	        catch(ex)
+	         {
+	          updateMessages('! Exception ... ' + ex);
+	          updateMessages('+ Skipping Fuzzed Objects ... ');
+	          updateMessages('+ Scanner ready ... ');
+	          fuzzedObjects = $.parseJSON('[]');
+	         }
+         }
+
+         function beginscan()
+         {
+         if(isDemo == '1'){
+	         updateMessages('+ Only 1 scan allowed in demo ...');
+	         updateMessages('+ Reach out to contact@digitsec.com to obtain a license ...');
+         }
+         else{
+         if(sessionStorage.getItem('startfuzzing')=='yes'){resetSessionStorage();}
+		 	DoAuracodeanalysis(); 
+         {
+         $.each(MetaDataFilenames, function(i, obj) {
+         if(obj.isApexPage == 0)
+         {
+             tempmdclassfiles.push(obj.id);
+             tempclassMetadata.push(obj);
+         }
+         if(obj.isApexPage == 1 )
+         {
+             tempmdpagefiles.push(obj.id);
+             temppageMetadata.push(obj);
+         }
+         });
+         }
+			 asynccallid++;
+			 securitysettingsfile.push('test');
+			 remotesettingsfile.push('remotesite');
+			 CSPSettings.push('cspsites');
+			 CORSettings.push('cors');
+			 asynccallid++;
+	         getMetadataPage();
+	         asynccallid++;
+	         iscallbackdone = 1;
+         }
+         }
+         
+         function getFileIdfromName(filename, type)
+         {
+         var id = '';
+         var searchlist = [];
+         if(type == 1)
+         {
+		 searchlist = temppageMetadatalist;	
+         }
+         else if(type == 2)
+         {
+         searchlist = tempclassMetadatalist;
+         
+         }
+         $.each(searchlist, function(i, obj) {
+         	if(obj.file == filename){
+         	console.log('found id for: ' + obj.fileid);
+         	id = obj.id;
+         	return false;
+         	}
+         	console.log('x');
+         	});
+         	return id;
+         }
+         
+         function getMetadataPage()
+		 {
+             temppagelist = [];
+             tempclasslist = [];
+             temppageMetadatalist =[];
+             tempclassMetadatalist = [];
+             for(i=0;i<limit; i++)
+                 {
+					if (tempmdpagefiles.length>0){temppagelist.push(tempmdpagefiles.pop()); temppageMetadatalist.push(temppageMetadata.pop());}
+                 }
+             if(temppagelist.length > 0)
+                 {
+	     			{!JSENCODE(dotPrefix)}SecurityScan.jsretrieveMetadataPage(temppagelist,handleasyncResult);
+             	 }
+             else
+                 {
+                 	for(i=0;i<limit; i++)
+                     {
+                        if(tempmdclassfiles.length >0){tempclasslist.push(tempmdclassfiles.pop());tempclassMetadatalist.push(tempclassMetadata.pop());}
+                     }
+                     if(tempclasslist.length > 0)
+                         {
+                         	{!JSENCODE(dotPrefix)}SecurityScan.jsretrieveMetadataClass(tempclasslist,handleasyncResult);
+                         }
+                     else{
+                          if(securitysettingsfile.length>0){securitysettingsfile.pop();   {!JSENCODE(dotPrefix)}SecurityScan.jsretrieveSecuritySettings('test',handleasyncResult);}
+                     else if(remotesettingsfile.length>0){remotesettingsfile.pop();   {!JSENCODE(dotPrefix)}SecurityScan.jsretrieveRemoteSettings('remotesite',handleasyncResult);}
+                     else if(CSPSettings.length>0){CSPSettings.pop(); {!JSENCODE(dotPrefix)}SecurityScan.jsretrieveCSPSettings('remotesite',handleasyncResult);}
+                     else if(CORSettings.length>0){CORSettings.pop(); {!JSENCODE(dotPrefix)}SecurityScan.jsretrieveCORSettings('remotesite',handleasyncResult);}
+                     
+                     else{
+                     		updateMessages('+ 3rd Party Access Checks ...');	
+                     		auditThridpartyAccess();
+                     		vulnsjsn = JSON.stringify(vulnerabilities);
+                     		//if(JSON.stringify(digitsecsettings[1].value) == 'true')
+                     		//{
+                            updateMessages('+ Loading Fuzzer Engine ...'); 
+           					beginFuzzTesting();
+           					//}else
+           					//{
+           						//sessionStorage.setItem('fuzzingcomplete', 'yes');
+           						//document.location.reload();
+           					//}
+           					console.log(JSON.stringify(MetaDataFilenames));
+            	            vulnsjsn = JSON.stringify(vulnerabilities);
+                         }
+                         }
+                 }
+                 }
+          
+		var timer = $.timer(function() {
+         {!JSENCODE(dotPrefix)}SecurityScan.jscheckAsyncRequest(currentasyncid,handleasyncRes)
+         });
+         
+         function handleasyncRes(result, event)
+         {
+         if (event.status && !(result == '0')) 
+         {
+             timer.stop();
+             ggunzip(result, MetaDataFilenames);     
+         } 
+         else
+         {
+        
+         }
+             
+         return;
+         }
+ 
+         function handledeleteResult(result, event) 
+         {
+         if (event.status && !(result == 'failure')) 
+         {
+         elem = document.getElementById(result);
+         elem.style.backgroundColor="rgb(253, 244, 119)";
+         elem.innerHTML="Scan Record Deleted";
+         elem.style.borderBottom="solid 1px rgb(245, 104, 104)";
+         elem.style.paddingTop="45px";
+         elem.style.textAlign="center";
+         elem.style.fontSize="x-large";
+         elem.style.width="750px";
+         elem.style.height="70px";
+         elem.style.marginLeft="5px";
+         elem.style.color="#a0a0a0";         
+         document.location.hash = result;
+         } 
+         
+         return;
+         }
+			
+		function handleasyncResult(result, event)
+		{
+            if(event.status && !(result == '0'))
+                {
+                    currentasyncid = result;
+                    grabasyncresponse();
+                }
+            return;
+        }
+		
+		function grabnextfiles()
+		{
+            getMetadataPage()
+        }
+
+	    function grabasyncresponse()
+		{
+             timer.set({ time : 8000, autostart : true });
+            return;
+        }
+        function beginFuzzTesting()
+        {
+           updateMessages('+ Beginning Fuzz Testing ...');
+           console.log('XS: ' + currentexploitcount);
+           SOQLInjectiontests();
+           XSStests();
+           XSSPersistenttests();
+           sessionStorage.setItem('vulnerabilities', JSON.stringify (vulnerabilities));
+           sessionStorage.setItem('vulncount', vulncount);
+           sessionStorage.setItem('scannerrunning', 'yes');
+		   sessionStorage.setItem('fuzzcountlimit', currentexploitcount);
+           sessionStorage.setItem('startfuzzing','yes');
+           sessionStorage.setItem('fuzzingcomplete','no');
+           sessionStorage.setItem('soqltests','yes');
+           sessionStorage.setItem('xsstests','no');
+           sessionStorage.setItem('auratests','no');
+           sessionStorage.setItem('persistentxsstests','no');
+           sessionStorage.setItem('fuzzcount',0);
+           document.location.href="{!$Page.SecurityFuzzer}";  
+         }
+ 		function DoAuracodeanalysis()
+ 		{
+ 		try
+ 		{
+ 			updateMessages('+ Starting lightning code analysis ...');
+ 			{!JSENCODE(dotPrefix)}SecurityScan.getAuraBundles(AuraBundleParsing);
+ 		}
+ 		catch(err)
+ 		{updateMessages('! Lightning code analysis not successful ...');}
+ 		}
+ 		var auraiterations = 0;
+ 		function AuraBundleParsing(result, event)
+ 		{
+ 		try
+ 		{
+ 		updateMessages('+ Parsing Lightning Bundles ...');
+         	if(event.status && !(result == null)) 
+         	{	
+         	aurasname = result;
+         	//	auracomponentcode = result;
+         	
+       {!JSENCODE(dotPrefix)}SecurityScan.getAuraComponents(0,limit,Auracodeanalysis);
+ 			}
+ 		}catch(ex)
+ 		{
+ 		 		updateMessages('+ Parsing Lightning bundles ...' + ex);
+ 		}
+ 		}
+ 		
+ 		
+ 		function Auracodeanalysis(result, event)
+        {
+        try
+ 		{
+ 		 var auracodemetadata = [];
+         if (event.status && !(result == null) && result.length != 0) 
+         {
+     //    aurasname = result;
+         auracomponentcode = result;
+         	$.each(auracomponentcode, function(i,obj)
+         		{
+         	
+    		if (obj.DefType == 'CONTROLLER' || obj.DefType == 'COMPONENT' || obj.DefType == 'RENDERER' || obj.DefType == 'HELPER' || obj.DefType == 'APPLICATION' )
+    		{
+    			
+    			$.each(aurasname, function(ix,objx)
+         		{
+    			if(objx.Id == obj.AuraDefinitionBundleId){
+    			var auranam = objx.MasterLabel;	
+    			item = {}
+         			item["id"] = obj.AuraDefinitionBundleId;
+         			item["source"] = $("<textarea/>").html(obj.Source).val();
+         			item["type"] = obj.DefType;
+         			item["name"] = objx.MasterLabel;
+         			item["namespace"] = objx.NamespacePrefix; 
+					auracodemetadata.push(item);
+    			}
+    			});
+    			}
+    	});
+         		
+ 		//	console.log(auracodemetadata);
+	        $.each(auracodemetadata, function(item,obj)
+	        {
+	        
+	        if(obj.source != ''){
+	        var src = obj.source;
+	       	if(obj.type == 'CONTROLLER' || obj.type == 'RENDERER' || obj.type == 'HELPER')
+	       	{
+	       		lightningSecurityChecks(src, obj.name+obj.type.toLowerCase()+'.js', obj.name+obj.type.toLowerCase()+'.js', obj.name+obj.type.toLowerCase()+'.js', 1);
+	       	}
+	       	else
+	       	{
+	       	if(obj.name != 'securityfuzzer' || obj.name !='lights_out'){
+	       	parseapexpage(src, obj.name, obj.name, obj.name, 1);
+	       	}
+	       	}
+	        if(obj.type == 'COMPONENT')
+	        {
+	        if(currentexploitcount < limit){
+	        	its ={}
+                its['namespace'] = obj.namespace;
+                its['component'] = obj.name;
+                its['appurl'] = lBaseURL+obj.namespace+'/';
+                its['fuzzed'] = 'no';
+                aurapersistentxssfunctionalURLs.push(its);
+                currentexploitcount++;
+	        }
+	        else{return false;}
+	        }
+	        }
+	        });
+			sessionStorage.setItem('aurapersistentxssfunctionalURLs', JSON.stringify (aurapersistentxssfunctionalURLs));
+	       	auraiterations = auraiterations + limit;
+ 		   	{!JSENCODE(dotPrefix)}SecurityScan.getAuraComponents(auraiterations,auraiterations+limit,Auracodeanalysis);
+ 		
+ 		}
+ 		
+ 		}
+ 		catch(err)
+ 		{updateMessages('+ Lightning code analysis not successful ...');}
+ 		return;
+ 		}
+ 		
+        function abort()
+        {
+        
+        if(sessionStorage.getItem('abort') == 'yes')
+        {
+            updateMessages(' + Abort scan initiated ...');
+            location.reload();
+            return true;
+        }
+        return false;
+        }
+        
+                
+        
+
+</script>
+
+    <apex:form id="form" >
+    
+       
+        
+        <div style="font-family:Helvetica; border-bottom:3px solid;   border-color: rgb(0,161,224); height:64px; width:760px; background-color:#ffffff;">   
+     <div style="font-size:34px; color:#837F7F;"><img style="width:50px;height:50px; float:left; padding:10px;" src="{!$Resource.S3_square_300dpi}" /> <div style="padding:15px; float:left; width:620px; color:#000;">SaaS Security Scanner for Salesforce</div><div style="float: right; padding-top:20px; font-size:13px">
+     <div class="dropdown">
+  <i class="fa fa-cog dropbtn" aria-hidden="true"></i>
+  <div class="dropdown-content">
+  <a href="{!JSENCODE(AuditURL)}">Audit Access Control</a>
+    <a href="{!JSENCODE(settingsURL)}">Settings</a>
+    
+	<a id="helpbutton" onclick="javascript:$('#overlay3, #overlay-back3').fadeIn(500);" href="#" style="color:#3A608D; text-decoration: none; outline: none;" onmouseover="this.style.color='#0D5DDF';" onmouseout="this.style.color='#3A608D';">Help</a>  </div>
+</div>
+     
+     </div></div>
+     </div>
+        
+        
+        <apex:pageMessages id="messages"/>
+        <!-- <apex:actionPoller action="{!checkAsyncRequest}" interval="5" rerender="form" rendered="{!NOT(ISNULL(AsyncResult))}"/> -->
+        
+            
+                <div style="width:750px; height:190px; font-family:Helvetica; padding-top:4px;">
+                <div style="width:180px; float:left;"></div>
+                <div style="width:254px; float:left; padding-left:5px;">
+                <div class="startscanbutton" onclick="updateMessages('+ Scan started ...');document.getElementById('scanspinner').style.display = 'block'; $('#overlay2, #overlay-back2').fadeIn(500);resetSessionStorage();">Scan</div>
+                <div class="abortbutton" onclick="javascript:sessionStorage.setItem('abort','yes'); document.getElementById('scanspinner').style.display = 'none';">Stop</div>
+                <div id="scanspinner" class="settings" style="display:none; float:left;"><img src="{!$Resource.green_progress}" height="80px" /></div>
+                <div class="settings" style="float:left; width:200px; height:50px"> <a id="scanresults" style="display:none;">Scan completed view results </a></div>
+                </div>
+                <div style="width:490px; height:180px; float:left;">
+               <textarea id="statusupdates" spellcheck="false" style="font-size:13px; border: solid 1px #1aa1dc;width:495px; height:180px; float:left; font-family:Helvetica; color:#04376f; border-radius:1%;"></textarea>
+                </div>
+                </div>
+                
+        
+      
+        
+        
+       <script>
+      
+        
+        
+       
+       function ggunzip(MetaDRetrieveZip, MetaDataFilenames)
+       {
+            var iter = 0;  
+            var zip = new JSZip(MetaDRetrieveZip, {base64:true});
+            var visualForceURL = ''; 
+  			console.log(JSON.stringify(zip.files));           
+            for(zip.file in zip.files)
+            {
+            iter = iter+1;
+            if(abort())
+            {
+            updateMessages('+ Scan aborted ... ');
+            return;
+            }
+            
+            /*$.each(MetaDataFilenames, function(i, obj) {
+        //   console.log(JSON.stringify(MetaDataFilenames));
+            var zipfilename = obj.file;
+            if(obj.isApexPage == '1'){
+            visualForceURL = fBaseURL +'apex/'+obj.id;
+            console.log(visualForceURL);
+            }
+             
+                if (zip.file == zipfilename)
+                {*/
+                    
+                                        
+                    
+                    if(zip.file.endsWith('\.page')){
+                    try
+                    {
+                    foundControllers = 0;
+                    var codelines = zip.files[zip.file].asText(); 
+                    var iscommentblock = 0;
+                   console.log('Here: ' + zip.file);
+                    var temp = zip.file.replace('pages\/', '');
+                    temp = temp.replace('.page','');
+                    visualForceURL = fBaseURL +'apex/'+temp;
+                    console.log(visualForceURL);
+                    var id = getFileIdfromName(zip.file, 1);
+                    console.log(id);
+                    if(id != ''){
+                     parseapexpage(codelines, id, zip.file, visualForceURL, 0);
+                     
+                     }
+                    }
+                    catch(err)
+                    {
+           
+                    }
+                    
+                    
+                    }else if(zip.file.endsWith('.cls')){
+                    foundControllers = 0;
+                    var codelines = zip.files[zip.file].asText(); 
+                    var iscommentblock = 0;
+                    var id = getFileIdfromName(zip.file, 2);
+                    console.log(id)
+                    if(id != ''){
+                    parseapexclass(codelines, id, zip.file, visualForceURL);
+                    
+                    }
+                    }
+                    
+               
+                if(zip.file == 'settings/Security.settings')
+                {
+
+           
+                    anlyzeSecuritySettings(zip.files[zip.file].asText());
+                }
+                var fls = JSON.stringify(zip.file);
+                console.log('Xfiles: ' + fls);
+                if(fls.includes('.cspTrustedSite'))
+                {
+                if(zip.files[zip.file].asText().trim() != '')
+                {
+                	anlyzeCSPSettings(zip.file, zip.files[zip.file].asText());
+                }
+                }
+                
+                if(fls.includes('.corsWhitelistOrigin'))
+                {
+                if(zip.files[zip.file].asText().trim() != '')
+                {
+                	anlyzeCORSettings(zip.file, zip.files[zip.file].asText());
+                }
+                }
+                
+                if(fls.includes('remoteSiteSettings'))
+                {
+                if(zip.files[zip.file].asText().trim() != '')
+                {
+                	
+                	anlyzeRemoteSettings(zip.file, zip.files[zip.file].asText());
+                	
+                }
+                }
+                
+            }
+            grabnextfiles();
+        }
+        
+        function auditThridpartyAccess()
+        {
+        	its = {}
+	                its['exploit'] = 'Review the following endpoints with access to your environment';
+	                its['variable'] = 'NA';
+	                its['url'] = btoa('Remote Sites: ' + JSON.stringify(gremotesettingsfile) + ' CSP Sites: ' + JSON.stringify(gCSPSettings) + ' CORS Sites: ' + JSON.stringify(gCORSettings));
+	                its['file'] = 'file';
+	                its['line'] = 'NA';
+	                its['typed'] = '26';
+	                its['code'] = btoa('Remote Sites ' + JSON.stringify(gremotesettingsfile) + ' CSP Sites ' + JSON.stringify(gCSPSettings) + ' CORS Sites ' + JSON.stringify(gCORSettings));
+	                its['severity'] = 'Medium';
+	                vulnerabilities.push(its);
+	                vulncount++;	
+        }
+       
+       	function  anlyzeRemoteSettings(file, filetext)
+       	{
+
+       		updateMessages('+ Analyzing ' + file + ' settings ...');
+            var xml = $.parseXML(filetext);
+            $xml = $(xml);
+            $disableProtocolSecurity = $xml.find('disableProtocolSecurity');
+            $isActive = $xml.find('isActive');
+            $url = $xml.find('url');
+            
+            if($isActive.text() == 'true')
+            {
+            gremotesettingsfile.push($url.text());
+				if($disableProtocolSecurity.text() == 'true')
+				{
+					its = {}
+	                its['exploit'] = 'The SSL protocol security has been disabled for ' + file;
+	                its['variable'] = 'NA';
+	                its['url'] = btoa('The SSL protocol security has been disabled for ' + file);
+	                its['file'] = file;
+	                its['line'] = 'NA';
+	                its['typed'] = '23';
+	                its['code'] = btoa($xml);
+	                its['severity'] = 'High';
+	                vulnerabilities.push(its);
+	                
+	                vulncount++;	
+				}   
+				if($url.text().startsWith('http://'))
+				{
+					its = {}
+	                its['exploit'] = 'The end point associated with ' + file + ' is not secure ';
+	                its['variable'] = 'NA';
+	                its['url'] = btoa($url.text());
+	                its['file'] = file;
+	                its['line'] = 'NA';
+	                its['typed'] = '24';
+	                its['code'] = 'NA';
+	                its['severity'] = 'High';
+	                vulnerabilities.push(its);
+	                
+	                vulncount++;
+				}        
+       		}
+       		}
+       		
+       		
+       	function  anlyzeCSPSettings(file, filetext)
+       	{
+
+       		updateMessages('+ Analyzing ' + file + ' CSP settings ...');
+            var xml = $.parseXML(filetext);
+            $xml = $(xml);
+            $disableProtocolSecurity = $xml.find('endpointUrl');
+            $isActive = $xml.find('isActive');
+            $url = $xml.find('endpointUrl');
+             gCSPSettings.push($url.text());
+		 
+            if($isActive.text() == 'true')
+            {
+				
+				if($url.text().startsWith('http://'))
+				{
+					its = {}
+	                its['exploit'] = 'The end point associated with ' + file + ' is not secure ';
+	                its['variable'] = 'NA';
+	                its['url'] = btoa($url.text());
+	                its['file'] = file;
+	                its['line'] = 'NA';
+	                its['typed'] = '25';
+	                its['code'] = 'NA';
+	                its['severity'] = 'High';
+	                vulnerabilities.push(its);
+	                
+	                vulncount++;
+				}        
+       		}
+       		}
+       		
+       	function  anlyzeCORSettings(file, filetext)
+       	{
+       		
+       		updateMessages('+ Analyzing ' + file + ' CORS settings ...');
+            var xml = $.parseXML(filetext);
+            $xml = $(xml);
+            $isActive = $xml.find('isActive');
+            $url = $xml.find('urlPattern');
+            gCORSettings.push($url.text());
+            if($isActive.text() == 'true')
+            {
+				
+				if($url.text().startsWith('http://'))
+				{
+					its = {}
+	                its['exploit'] = 'The end point associated with ' + file + ' is not secure ';
+	                its['variable'] = 'NA';
+	                its['url'] = btoa($url.text());
+	                its['file'] = file;
+	                its['line'] = 'NA';
+	                its['typed'] = '26';
+	                its['code'] = 'NA';
+	                its['severity'] = 'High';
+	                vulnerabilities.push(its);
+	                
+	                vulncount++;
+				}        
+       		}
+       		}
+       
+        function anlyzeSecuritySettings (filetext)
+        {
+            updateMessages('+ Analyzing security settings ...');
+            var xml = $.parseXML(filetext);
+            $xml = $(xml);
+            $complexity = $xml.find('complexity');
+            $expiration = $xml.find('expiration');
+            $historyRestriction = $xml.find('historyRestriction');
+            $lockoutInterval = $xml.find('lockoutInterval');
+            $maxLoginAttempts = $xml.find('maxLoginAttempts');
+            $minPasswordLength = $xml.find('minPasswordLength');
+            $questionRestriction = $xml.find('questionRestriction');            
+            $enableCSRFOnGet = $xml.find('enableCSRFOnGet');
+            $enableCSRFOnPost = $xml.find('enableCSRFOnPost');
+            $enableClickjackNonsetupSFDC = $xml.find('enableClickjackNonsetupSFDC');
+            $enableClickjackNonsetupUser = $xml.find('enableClickjackNonsetupUser');
+            $enableClickjackSetup = $xml.find('enableClickjackSetup');
+            $sessionTimeout = $xml.find('sessionTimeout');
+            $enableCacheAndAutocomplete = $xml.find('enableCacheAndAutocomplete');
+            
+            if($complexity.text() == 'NoRestriction' || $complexity.text() == 'AlphaNumeric')
+            {
+             its = {}
+                its['exploit'] = 'The current password complexity is set to ' + $complexity.text();
+                its['variable'] = 'NA';
+                its['url'] = btoa('The current password complexity is set to ' + $complexity.text());
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '4';
+                its['code'] = 'NA';
+                its['severity'] = 'Medium';
+                
+                vulnerabilities.push(its);
+                vulncount++;
+            }
+            
+            if($expiration.text() == 'OneYear' || $expiration.text() == 'SixMonths')
+            {
+                its = {}
+                its['exploit'] = 'The current password expiration policy is set to ' + $expiration.text();
+                its['variable'] = 'NA';
+                its['url'] = btoa('The current password expiration policy is set to ' + $expiration.text());
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '6';
+                its['code'] = 'NA';
+                its['severity'] = 'Medium';
+                vulnerabilities.push(its);
+                vulncount++;
+            }
+            
+            if(parseInt($historyRestriction.text()) < 3)
+            {
+                its = {}
+                its['exploit'] = 'The current password history settings are set to remember the last ' + $historyRestriction.text() + ' password(s).';
+                its['variable'] = 'NA';
+                its['url'] = btoa('The current password history settings are set to remember the last ' + $historyRestriction.text() + ' password(s).');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '7';
+                its['code'] = 'NA';
+                its['severity'] = 'Medium';
+                vulnerabilities.push(its);
+                vulncount++;
+            }
+            
+            if($lockoutInterval.text() == '')
+            {
+                its = {}
+                its['exploit'] = 'The current setting does not lockout a user out due to numerous failed login attempts.';
+                its['variable'] = 'NA';
+                its['url'] = btoa('The current setting does not lockout a user out due to numerous failed login attempts.');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '8';
+                its['code'] = 'NA';
+                its['severity'] = 'Low';
+                vulnerabilities.push(its);
+                vulncount++;
+            }
+            
+            if($maxLoginAttempts.text() == 'NoLimit')
+            {
+                its = {}
+                its['exploit'] = 'The current setting does not lock a user after repeated failed login attempts.';
+                its['variable'] = 'NA';
+                its['url'] = btoa('The current setting does not lock a user after repeated failed login attempts.');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '9';
+                its['code'] = 'NA';
+                its['severity'] = 'High';
+                
+                vulnerabilities.push(its);
+                vulncount++;
+            }
+            
+            if($minPasswordLength.text() == 'FiveCharacters' || $minPasswordLength.text() == 'EightCharacters')
+            {
+                its = {}
+                its['exploit'] = 'The current setting only requires a password of ' +$minPasswordLength.text()+' characters.';
+                its['variable'] = 'NA';
+                its['url'] = btoa('The current setting only requires a password of ' +$minPasswordLength.text()+' characters.');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '10';
+                its['code'] = 'NA';
+                its['severity'] = 'Medium';
+                vulnerabilities.push(its);
+                vulncount++;
+            }
+            
+            if($questionRestriction.text() == 'None' )
+            {
+                its = {}
+                its['exploit'] = 'The current setting allows to save password as the secret question.';
+                its['variable'] = 'NA';
+                its['url'] = btoa('The current setting allows to save password as the secret question.');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '11';
+                its['code'] = 'NA';
+                its['severity'] = 'High';
+                vulnerabilities.push(its);
+                vulncount++;
+            }
+            
+            if($enableCSRFOnGet.text() == 'false' || $enableCSRFOnGet.text() == '' )
+            {
+                its = {}
+                its['exploit'] = 'Cross-Site Request Forgery (CSRF) protection on GET requests on non-setup pages is not enabled.';
+                its['variable'] = 'NA';
+                its['url'] = btoa('Cross-Site Request Forgery (CSRF) protection on GET requests on non-setup pages is not enabled.');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '12';
+                its['code'] = 'NA';
+                its['severity'] = 'Low';
+                vulnerabilities.push(its);
+                vulncount++;
+            }
+            
+            if($enableCSRFOnPost.text() == 'false' || $enableCSRFOnPost.text() == '' )
+            {
+                its = {}
+                its['exploit'] = 'Cross-Site Request Forgery (CSRF) protection on POST requests on non-setup pages is not enabled.';
+                its['variable'] = 'NA';
+                its['url'] = btoa('Cross-Site Request Forgery (CSRF) protection on POST requests on non-setup pages is not enabled.');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '13';
+                its['code'] = 'NA';
+                its['severity'] = 'Medium';
+                vulnerabilities.push(its);
+                vulncount++;
+            }
+            
+            if($enableClickjackNonsetupSFDC.text() == 'false' || $enableClickjackNonsetupSFDC.text() == '' )
+            {
+                its = {}
+                its['exploit'] = 'Clickjack protection for non-setup Salesforce pages is not enabled.';
+                its['variable'] = 'NA';
+                its['url'] = btoa('Clickjack protection for non-setup Salesforce pages is not enabled.');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '14';
+                its['code'] = 'NA';
+                its['severity'] = 'Low';
+                vulnerabilities.push(its);
+                vulncount++;
+            }
+            
+            if($enableClickjackNonsetupUser.text() == 'false' || $enableClickjackNonsetupUser.text() == '' )
+            {
+                its = {}
+                its['exploit'] = 'Clickjack protection for non-setup customer pages is not enabled.';
+                its['variable'] = 'NA';
+                its['url'] = btoa('Clickjack protection for non-setup Salesforce pages is not enabled.');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '15';
+                its['code'] = 'NA';
+                its['severity'] = 'Low';
+                vulnerabilities.push(its);
+                vulncount++;
+            }
+            
+            if($enableClickjackSetup.text() == 'false' || $enableClickjackSetup.text() == '' )
+            {
+                its = {}
+                its['exploit'] = 'Clickjack protection for setup pages is not enabled.';
+                its['variable'] = 'NA';
+                its['url'] = btoa('Clickjack protection for setup pages is not enabled.');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '16';
+                its['code'] = 'NA';
+                its['severity'] = 'Medium';
+                vulnerabilities.push(its);
+                vulncount++;
+            }
+            
+            if($sessionTimeout.text() == 'FourHours' || $sessionTimeout.text() == 'TwelveHours' || $sessionTimeout.text() == 'EightHours' ||$sessionTimeout.text() == '' )
+            {
+                its = {}
+                its['exploit'] = 'Session timeout is set too high at '+ $sessionTimeout.text() +'.';
+                its['variable'] = 'NA';
+                its['url'] = btoa('Session timeout is set too high at '+ $sessionTimeout.text() +'.');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '17';
+                its['code'] = 'NA';
+                its['severity'] = 'Medium';
+                vulnerabilities.push(its);
+                vulncount++;
+            }
+            
+            if($enableCacheAndAutocomplete.text == 'true')
+            {
+            its = {}
+                its['exploit'] = 'Auto complete and cache for login page is enabled.';
+                its['variable'] = 'NA';
+                its['url'] = btoa('Auto complete and cache for login page is enabled.');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '17';
+                its['code'] = 'NA';
+                its['severity'] = 'Medium';
+                vulnerabilities.push(its);
+                vulncount++;
+            }
+          
+        }
+        
+        String.prototype.replaceBetween = function(start, end, what) {
+  	  	return this.substring(0, start) + what + this.substring(end);
+		};
+        
+        
+        function parsestringliterals(zipfilename,codeline, i)
+        {
+        	var lasttick = 0;
+	 			
+	 			var xcodeline = codeline;
+	 			var tempcodeparse = codeline;
+	 			var ttempcodeparse = tempcodeparse;
+	 			 var sptrn =  new RegExp("(\\\\')");
+	 			tempcodeparse = tempcodeparse.replace(sptrn, "");
+	 			ttempcodeparse = ttempcodeparse.replace(sptrn, "");
+	 			xcodeline = xcodeline.replace(sptrn,"");
+
+				{
+				{
+
+				while(ttempcodeparse.match("\\'+"))
+				{				
+				scauniqueint++;	
+				var firsttick = tempcodeparse.indexOf("'");
+				tempcodeparse = tempcodeparse.slice(tempcodeparse.indexOf("'")+1, tempcodeparse.length);
+				
+				var nexttic = tempcodeparse.indexOf("'");
+				var ntex = tempcodeparse.indexOf("'");
+				ttempcodeparse = tempcodeparse.slice(tempcodeparse.indexOf("'")+1,tempcodeparse.length);
+				var offset = tempcodeparse.indexOf("'");
+				tempcodeparse = tempcodeparse.slice(0, tempcodeparse.indexOf("'"));
+				
+				xcodeline = xcodeline.replace(("'"+tempcodeparse+"'"),'SCALITERAL_'+scauniqueint);
+				 var lit = {}; // file, line, indexstart, indexend, key, value
+				 lit["file"] = zipfilename;
+			 	 lit["line"] = i+1;
+			 	 lit["indexstart"] = lasttick+firsttick;
+			 	 lit["indexend"] = lasttick+firsttick+nexttic+2;
+			 	 lit["key"] = 'SCALITERAL_'+scauniqueint;
+			 	 lit["value"] = tempcodeparse;
+				 stringliterals.push(lit);
+				 
+
+				 tempcodeparse = ttempcodeparse;
+				 
+				lasttick = lasttick+firsttick+nexttic;
+
+				}
+				
+				}
+				return xcodeline;
+				
+        }
+        }
+        
+        
+        function parsesoql(zipfilename,codeline, i)
+        {
+        	
+	 			
+	 			var xcodeline = codeline;
+	 			var tempcodeparse = xcodeline;
+	 			scauniqueint++;	
+				var firsttick = tempcodeparse.indexOf("[");
+				var secondtick = tempcodeparse.indexOf("]");
+				tempcodeparse = tempcodeparse.slice(tempcodeparse.indexOf("[")+1, tempcodeparse.indexOf("]"));
+				
+				 xcodeline = xcodeline.replace(("["+tempcodeparse+"]"),'SOQLITERAL_'+scauniqueint);
+				 var lit = {}; // file, line, indexstart, indexend, key, value
+				 lit["file"] = zipfilename;
+			 	 lit["line"] = i+1;
+			 	 lit["indexstart"] = firsttick;
+			 	 lit["indexend"] = secondtick;
+			 	 lit["key"] = 'SOQLITERAL_'+scauniqueint;
+			 	 lit["value"] = tempcodeparse;
+				 soqlparsedstrings.push(lit);
+				 parseassignments(zipfilename, xcodeline, line);
+				 return xcodeline;
+        }
+        
+        
+        function parseassignments(zipfilename, code, line)
+        {
+        try
+        {
+      		var lhs = [];
+        	var rhs = [];
+        	var defs = [];
+        	
+        	var xclines = code.split('{');
+				$.each(xclines, function(ind, ite)
+				{
+				lhs = [];
+        		rhs = [];
+        		defs = [];
+				var xcodlin = ite.split(';');
+				$.each(xcodlin, function(index, item){
+				if(item.trim()!=''){
+				var LoFH = item.split('=');
+				
+				if(LoFH.length == 2)
+				{
+				scauniqueint++;
+				itx ={}
+				itx["file"] = zipfilename;
+				itx["assignmentid"] = 'SCAASSIGNMENTS_'+scauniqueint;
+				itx["line"] = line;
+				itx["lhs"] = LoFH[0].trim().split(' ');
+				itx["rhs"] = LoFH[1].trim().split(' ');
+				itx["type"] = '';
+				itx["vflags"] = [];
+				itx["pflags"] = [];
+				defs.push(itx);
+				
+					
+				}else
+				{
+				scauniqueint++;
+				itx ={}
+				itx["file"] = zipfilename;
+				itx["functionid"] = 'SCAASSIGNMENTS_'+scauniqueint;
+				itx["line"] = line;
+				itx["lhs"] = LoFH[0].trim().split(' ');
+				itx["rhs"] = [];
+				itx["type"] = '';
+				itx["vflags"] = [];
+				itx["pflags"] = [];
+				defs.push(itx);
+				
+					
+				}
+				xdefs.push(defs);
+				}
+				});
+				});
+				
+				}catch(err){}
+				
+        }
+        
+        function parsedefinitions(zipfilename, code, line)
+        {
+        	
+        }
+        
+        function getfunctionsfromcode(zipfilename, code, line)
+        {
+        try
+        {
+        var tempopen=[];
+        var tempclose=[];
+        var functioncalls =[];
+        var heightestopen;
+        var heightestclose;
+        
+         var xclines = code.split('{');
+				$.each(xclines, function(ind, ite)
+				{
+				var xcodlin = ite.split(';');
+				$.each(xcodlin, function(index, item){
+					functioncalls =[];
+					tempopen=[];
+					tempclose=[];
+				for(var i=0;i<item.length;i++)
+				{
+					if(item[i] == '('){tempopen.push(i);  heightestopen = i;}
+					if(item[i] == ')'){tempclose.push(i); heightestclose = i;}
+				}
+				var xitem = item;
+				var xtempopen = tempopen
+				for(var i=0;i<tempopen.length;i++)
+				{
+					var open = xtempopen[tempopen.length - (i+1)];
+				
+					var index = tempclose.indexOf(close);
+					if (index > -1) {
+    				tempclose.splice(index, 1);
+					}
+					var close;
+					var difference = 0;
+					var xsj = 1;
+					$.each(tempclose, function (indx, itm)
+					{
+						if(xsj == 1 && ((itm > open)))
+						{
+							xsj = 2;
+							difference = itm - open;
+							close = itm;							
+						}
+						else if(((itm - open) < difference) && ((itm > open)))
+						{	
+							difference = itm - open;
+							close = itm;
+						}
+						if(tempopen.length == 1)
+						{
+							close = itm;
+						}
+					});
+				
+				xitem = item;
+				xitem = xitem.substring(open+1, close);
+				scauniqueint++;
+				itx ={}
+				itx["file"] = zipfilename;
+				itx["functionid"] = 'SCAFUNCTIONCALL_'+scauniqueint;
+				itx["opencurly"] = open;
+				itx["closecurly"] = close;
+				itx["functionsig"] =[];
+				itx["rawfunctionsig"] = '';
+				itx["parameters"] = xitem;
+				itx["type"] = '';
+				itx["vflags"] = [];
+				itx["pflags"] = [];
+				itx["line"] = line;
+				itx["trace_params"] = [];
+				itx["assigned_to"] = [];
+				functioncalls.push(itx);
+				}
+				
+				xitem = item;
+				var functionsignature = '';
+				var foundfucs = 0;
+				for(var x=0; x<functioncalls.length; x++)
+				{
+				var cc = functioncalls[x].opencurly;
+				
+				p=cc;
+				while(p>0)
+				{
+				p--;
+				if((item[p] ==' ' || item[p] ==','  || item[p] == '=') && foundfucs == 0)
+				{
+					//if(item[p] == '='){
+					var yitem = xitem.substring(0, p);
+					functionsignature = xitem.substring(p, cc).toLowerCase().trim();
+					functionsignature = functionsignature.replace('if(','').replace('}','');
+					var LFH = yitem.split('=');
+						$.each(LFH, function(ix,itx)
+						{
+							
+							if(itx != ''){
+								functioncalls[x].assigned_to = itx.trim().split(' ');
+								}
+						});
+						functioncalls[x].rawfunctionsig = functionsignature.trim();
+						functioncalls[x].functionsig = functionsignature.split('.');
+						foundfucs = 1;
+				//}
+				}
+				if(foundfucs == 0)
+				{
+					functionsignature = xitem.substring(p, cc);
+					functionsignature = functionsignature.substring(functionsignature.indexOf('(')+1,functionsignature.length).toLowerCase();
+					functioncalls[x].rawfunctionsig = functionsignature.trim();
+					functioncalls[x].functionsig = functionsignature.split('.');
+				}
+				}
+				foundfucs = 0;
+				}
+				
+				xfunctioncalls.push(functioncalls);
+				});
+				});
+				
+				}catch(err){}
+			}
+         
+         
+        
+        
+        
+        function parseapexclass(codelines, fileid, zipfilename, visualForceURL)
+        {          
+        try
+        {
+        
+        var functioncode = '';
+        var soqlcode = ''; 
+        var lastcodeline=0;
+        //xfunctioncalls = [];
+        updateMessages('+ Analyzing ' + zipfilename + ' ...');
+        
+        itm = {}
+        itm["file"] = zipfilename;
+        itm["intfuncs"] = [];
+        foundfuncs.push(itm);
+                    
+                    var iscommentblock = 0;
+                    var codeline = codelines.split('\n');
+                    
+                    for(var i = 0;i < codeline.length;i++)
+                    {
+					if(codeline[i].trim().toLowerCase() == '@istest'){console.log(codeline[i].trim().toLowerCase());break;}
+					codeline[i].trim().toLowerCase();
+                    if(codeline[i].trim().match("^[////]")){}
+                    else if (codeline[i].trim().match("^[///*]") && codeline[i].trim().match("[/*//]$")){}
+                    else if (codeline[i].trim().match("^[///*]"))
+                    { 
+                        iscommentblock = 1;
+                    }
+                    else if (iscommentblock && codeline[i].trim().match("[/*//]$"))
+                    { iscommentblock = 0;   
+                    }
+                    else if (!iscommentblock)
+                    {
+                    if(codeline[i].trim().replace('\t','').replace('\r','') != "" && codeline[i].trim() != "{"){lastcodeline=i+1;}
+                    if(codeline[i].trim()!=""){
+                    if(codeline[i].trim().match("[////]")){var tests = codeline[i].split("\/\/"); if(tests.length > 1){codeline[i] = tests[0]; }}        
+
+                    if(codeline[i].match(startlineregex))
+                    {
+                    item = {}
+                    item ["file"] = zipfilename;
+                    if(codeline[i].trim() == "{")
+                    {
+	                    item ["startline"] = lastcodeline;
+	                    item["codesnip"] = codeline[lastcodeline-1];
+                    }else
+                    {
+	                    item ["startline"] = i+1;
+	                    item["codesnip"] = codeline[i];
+                    }
+                    item ["endline"] = "";   
+                codeblocks.push(item);  
+            }
+            if (codeline[i].match(endlineregex))
+            {
+                var highest = 0;
+                $.each(codeblocks, function(ix, objt) {
+                if(objt.startline > highest && objt.endline == "")
+                {
+                    highest = objt.startline;
+                }   
+                });
+                $.each(codeblocks, function(ix, objt) {       
+                if(objt.startline == highest )
+                {
+                    objt.endline = i+1;
+                }                
+                });
+            }
+        	
+        	$.each(interestingfuncs,function(ix, objt){
+            if(codeline[i].toLowerCase().match(objt.func))
+                {
+                    itx = {}
+                    itx["line"] = i+1;
+                    itx["id"] = objt.id;
+                    itx["mitigated"] = 0;
+                    itx["code"] = codeline[i].trim();
+                    itx["verified"] = 0;
+                    $.each(foundfuncs, function(ij, o){
+                    if(o.file == zipfilename)
+                    {
+                        o["intfuncs"].push(itx);
+                    }   
+                });                        
+                }
+            });
+        
+                   
+        
+        var SOLQInjectionstring = codeline[i].toLowerCase();
+
+        var soqlptrn =  new RegExp(SOQLInjection);
+        if (soqlptrn.test(SOLQInjectionstring))
+        {
+        var codelineno = i+1 ;
+        its = {}
+                its['exploit'] = 'SOQL Injection found @ ' + zipfilename + ' at line ' + codelineno;
+                its['variable'] = 'NA';
+                its['url'] = 'NA';
+                its['file'] = zipfilename;
+                its['line'] = i+1;
+                its['typed'] = '1';
+                its['code'] = btoa(codeline[i]);
+                its['severity'] = 'High';
+                vulnerabilities.push(its);
+                vulncount++;
+
+        }       
+        
+
+        $.each(requestApexobjects, function(ix, objt) {
+        
+        if(codeline[i].toLowerCase().match(objt.regularex))
+        {
+            var strx = codeline[i].toLowerCase().indexOf(objt.rawobject);
+            strx = strx + objt.rawobject.length;
+            var nd = codeline[i].slice(strx);
+            var znd = nd.indexOf(')');
+            var collss = nd.split('\'');
+            $.each(MetaDataFilenames, function(irm, oirm){
+            $.each(oirm.apexControllers, function(im, oim){
+            if (oim.controller == fileid)
+            {  
+        var fuzunique = 0;
+        $.each(fuzzedinputs, function(i, obj) {
+        var furltemp = fBaseURL +'apex/'+oirm.id;
+        if(obj.url == furltemp && obj.variabletotest == collss[1])
+        {
+        fuzunique = 1;
+        }
+        });
+        if(fuzunique == 0){
+                item = {}
+                item ["url"] = fBaseURL +'apex/'+oirm.id;
+                item ["variabletotest"] = collss[1];
+                item ["method"] = "GET";
+                item ["linenumber"] = i+1;
+                item ["vfpage"] = zipfilename;
+                item ["id"] = fileid;
+            fuzzedinputs.push(item);
+            }
+            }
+            });
+        });
+
+        }
+        });
+            $.each(foundfuncs, function(isx, objct){
+            if(objct.file == zipfilename)
+            {
+            $.each(objct.intfuncs, function(ix, objt){
+
+            $.each(DMLfuncs, function(ik,o){
+            if(objt.verified == 0)
+            {
+            if(objt.id == o.DMLfunc)
+            {
+                
+                $.each(objct.intfuncs, function(x,b){
+                $.each(DMLfuncs, function(r, rx){
+                $.each(rx.protectfuncs, function(j,k){
+                  if(k.pfunc == b.id)
+                  {
+
+                    var lowest;
+                    var firstiteration = "0";
+                    var foundstartline;
+                    var foundendline;
+                    var startofnextblock;
+                    var laststartblock = 0;
+                    var lastendblock = 0;
+                    $.each(codeblocks, function(l,t){
+                        if(t.file == objct.file)
+                        {    
+                        	
+                            var difference;
+                            if(firstiteration == "0")
+                            {
+                            difference = objt.line - t.startline;
+                            firstiteration = "1";
+                            lowest = difference;
+                            }
+                            difference = objt.line - t.startline;
+						    if(lowest >= difference && difference > 0)
+                            {
+                                foundstartline = t.startline;
+                                foundendline = t.endline;
+                                lowest = difference;
+                            }
+                            if(laststartblock <= foundstartline && t.startline >=laststartblock)
+                            {
+                            	laststartblock = t.startline;
+                            	lastendblock = t.endline;
+                            }
+                            
+                        }
+                    });
+
+                    if(b.code.match(ifnot))
+                    {	
+                    	
+	                   	if(objt.line >= laststartblock && objt.line >= lastendblock)
+	                    {
+	                    
+	                        objt.mitigated = 1;
+	                        objt.verified = 1;
+	                        return;
+	                    }
+                    }
+                    else if(b.line >= foundstartline && b.line <= foundendline)
+                    {	
+                        objt.mitigated = 1;
+                        objt.verified = 1;
+                        return;
+                    }
+                    
+                }   
+                });
+                });
+                });
+            }
+            }    
+            });
+            });
+            }           
+            });
+            
+            }
+            
+            	 var sca = {}
+       			 sca["file"] = zipfilename;
+       			 
+            	if(codeline[i].toLowerCase().match('\\b(class)\\b'))
+				{
+				
+						var strx = codeline[i].toLowerCase().indexOf('class')+5;
+						var nd;
+				if(codeline[i].match('\\{+'))
+					{
+					var is =  codeline[i].toLowerCase().indexOf('{');
+				    nd = codeline[i].slice(strx, is);	
+		 			}
+		 			else{
+
+						nd = codeline[i].slice(strx, codeline[i].length);
+						
+						}
+						sca["class"] = nd.trim();
+						sca["line"] = i+1;
+						if(codeline[i].toLowerCase().match('\\b(public)\\b')){sca["scope"] = 'public'; }
+						else{
+						if(codeline[i].toLowerCase().match('\\b(private)\\b')){sca["scope"] = 'private'; }
+		 				}
+		 				sca["sharing"] = 'na';
+		 				if(codeline[i].toLowerCase().match('\\b(with sharing)\\b')){sca["sharing"] = 'with sharing';}
+		 				if(codeline[i].toLowerCase().match('\\b(without sharing)\\b')){sca["sharing"] = 'without sharing';}
+		 				sca["sca"] = [];
+		 				scaf.push(sca);	
+		 					
+		 				
+	 			}
+	 			
+	 			if(scachecks == '1')
+	 			{
+	 			console.log('scachecks');	
+	 			//static code structures
+	 			var xcodeline=parsestringliterals(zipfilename,codeline[i]);
+	 			xcodeline = soqlcode + xcodeline;
+	 			if(xcodeline.match('\\[+') || xcodeline.match('\\]+') || soqlcode !='')
+	 			{
+	 			var open = 0;
+	 			var close = 0;
+	 				for(var j=0; j < xcodeline.length; j++)
+	 				{
+	 					if(xcodeline[j] == '['){open++;}
+	 					if(xcodeline[j] == ']'){close++;}
+	 				}
+	 				if(open == close)
+	 				{
+	 				//parse functions
+	 				parsesoql(zipfilename,xcodeline,i+1);
+	 				soqlcode = ''; 
+	 				}
+	 				else
+	 				{ 
+	 					soqlcode = xcodeline;
+	 				}
+	 			}
+	 			xcodeline = functioncode + xcodeline;
+	 			if(xcodeline.match('\\(+') || xcodeline.match('\\)+') || functioncode !='')
+	 			{
+	 			var open = 0;
+	 			var close = 0;
+	 			for(var j=0; j < xcodeline.length; j++)
+	 				{
+	 					if(xcodeline[j] == '('){open++;}
+	 					if(xcodeline[j] == ')'){close++;}
+	 				}
+	 				if(open == close)
+	 				{
+	 				//parse functions
+	 				getfunctionsfromcode(zipfilename,xcodeline,i+1);
+	 				functioncode = ''; 
+	 				}
+	 				else
+	 				{ 
+	 					functioncode = xcodeline;
+	 				}
+	 				
+	 			}
+	 			else if(xcodeline.match('=+'))  
+	 			{
+	 				parseassignments(zipfilename,xcodeline,i+1);
+	 			}
+	 			else
+	 			{	
+	 				parsedefinitions(zipfilename,xcodeline,i+1);
+	 			}
+	 			}
+	 			
+			}
+	 		
+          }
+                                
+        
+            $.each(foundfuncs, function(im, obj){
+            if(obj.file == zipfilename)
+            {
+            $.each(obj.intfuncs, function(ix, objt){
+            $.each(DMLfuncs, function(k,o){
+            if(objt.id == o.DMLfunc && objt.mitigated == 0)
+            {   
+             var fuzunique = 0;
+	       /* $.each(vulnerabilities, function(ixj, objxj) {
+	        if(objxj.file == obj.file && objxj.line == objt.line)
+	        {
+	        fuzunique = 1;
+	        }
+	        });*/
+	        if(fuzunique == 0){
+            	its = {}
+                its['exploit'] = 'CRUD - FLS: Authorization bypass issue found @ ' + obj.file + ' on line ' + objt.line;
+                its['variable'] = 'NA';
+                its['url'] = 'NA';
+                its['file'] = obj.file;
+                its['line'] = objt.line.toString();
+                its['typed'] = '2';
+                its['code'] = btoa(objt.code);
+                its['severity'] = 'High';
+                vulnerabilities.push(its);
+                vulncount++;
+                return false;
+                }
+            }
+            });
+            });
+
+            }
+            });
+        if (xfunctioncalls.length > 0){
+        functioncalltrace.push(xfunctioncalls);
+        xfunctioncalls = [];
+        }
+      	// codeblocks = [];
+       	// functioncalltrace = [];
+       	// foundfuncs = [];
+        
+        console.log('String Literals: ' + JSON.stringify(stringliterals));
+        console.log('Code Blocks: ' + JSON.stringify(codeblocks));
+        console.log('Function Call Trace: ' + JSON.stringify(functioncalltrace));
+        console.log('Found Functions: ' + JSON.stringify(foundfuncs));
+        console.log(JSON.stringify(codeblocks));
+        }
+        
+        
+        catch(err) { 
+        
+        }
+        }
+        
+        function lightningSecurityChecks(codelines, fileid, visualforcePage, visualforceURL, isaura)
+        {
+        try
+        {
+        var toplevel = UglifyJS.parse(codelines);
+		var walker = new UglifyJS.TreeWalker(function(node){
+	if (typeof node.body !='undefined'){
+		if(typeof node.body.operator !='undefined'){
+			$.each(aurabannedOperators, function(index,item){
+				if(node.body.operator == item)
+				{
+				
+					its = {} 			
+                    its['exploit'] = 'Use of instanceof is disallowed in Lightning component @ ' + visualforcePage + ' line ' + node.start.line;
+                    its['variable'] = 'NA';
+                    its['url'] = 'NA';
+                    its['file'] = visualforcePage;
+                    its['line'] = node.start.line;
+                    its['typed'] = '19';
+                    its['code'] = btoa(node.body.operator);    
+		            its['severity'] = 'High';
+                    vulnerabilities.push(its);
+                    vulncount++;
+                    
+					
+				}
+			});
+	
+	}}
+	if(node instanceof UglifyJS.AST_If){
+		if (typeof node.condition !='undefined')
+			if (typeof node.condition.operator !='undefined')
+		$.each(aurabannedOperators, function(index,item){
+				if(node.condition.operator == item)
+				{
+				its = {} 			
+                    its['exploit'] = 'Use of instanceof is disallowed in Lightning component @ ' + visualforcePage + ' line ' + node.start.line;
+                    its['variable'] = 'NA';
+                    its['url'] = 'NA';
+                    its['file'] = visualforcePage;
+                    its['line'] = node.start.line;
+                    its['typed'] = '19';
+                    its['code'] = btoa(node.condition.operator);    
+		            its['severity'] = 'High';
+                    vulnerabilities.push(its);
+                    vulncount++;
+					
+				
+				}
+			});
+		
+	}
+
+	if(node instanceof UglifyJS.AST_Call){
+		if (typeof node.expression !='undefined')
+			if (typeof node.expression.expression !='undefined')
+				if (typeof node.expression.expression.name !='undefined')
+				if (typeof node.expression.property !='undefined')
+		if(node.expression.expression.name == 'document')
+		{
+			var notfound=0;
+			$.each(aurasecuredocumentFuncs, function(index,item)
+			{
+				if(item == node.expression.property)
+				{
+					notfound =1;
+				}
+			});
+			if(notfound == 0)
+			{	
+			its = {} 			
+                    its['exploit'] = 'Use of insecure document functions in Lightning component is not allowed @ ' + visualforcePage + ' line ' + node.start.line;
+                    its['variable'] = 'NA';
+                    its['url'] = 'NA';
+                    its['file'] = visualforcePage;
+                    its['line'] = node.start.line;
+                    its['typed'] = '21';
+                    its['code'] = btoa(node.expression.expression.name + '.'+node.expression.property);    
+		            its['severity'] = 'High';
+                    vulnerabilities.push(its);
+                    vulncount++;
+			
+						}
+
+		}else if (typeof node.expression !='undefined')
+			if (typeof node.expression.expression !='undefined')
+				if (typeof node.expression.expression.name !='undefined')
+				if (typeof node.expression.property !='undefined')
+						if (node.expression.expression.name == 'window')
+						{
+			var notfound=0;
+
+			$.each(aurasecurewindowFuncs, function(index,item)
+			{
+				
+				
+				if(item == node.expression.property)
+				{
+					notfound =1;
+				}
+			});
+			if(notfound == 0)
+			{	
+			its = {} 			
+                    its['exploit'] = 'Use of insecure window functions in Lightning component is not allowed @ ' + visualforcePage + ' line ' + node.start.line;
+                    its['variable'] = 'NA';
+                    its['url'] = 'NA';
+                    its['file'] = visualforcePage;
+                    its['line'] = node.start.line;
+                    its['typed'] = '22';
+                    its['code'] = btoa(node.expression.expression.name + '.' + node.expression.property);    
+		            its['severity'] = 'High';
+                    vulnerabilities.push(its);
+                    vulncount++;
+						}
+		}else if (typeof node.expression !='undefined')
+			if (typeof node.expression.expression !='undefined')
+				if (typeof node.expression.expression.name !='undefined')
+					if (node.expression.expression.name == 'Aura')
+						{
+						its = {} 			
+                    its['exploit'] = 'Use of Aura namespace in Lightning component is not allowed @ ' + visualforcePage + ' line ' + node.start.line;
+                    its['variable'] = 'NA';
+                    its['url'] = 'NA';
+                    its['file'] = visualforcePage;
+                    its['line'] = node.start.line;
+                    its['typed'] = '21';
+                    its['code'] = btoa(node.expression.expression.name);    
+		            its['severity'] = 'High';
+                    vulnerabilities.push(its);
+                    vulncount++;
+							
+						}
+		
+	}
+    
+});
+toplevel.walk(walker);
+}
+catch(err)
+{}
+        }
+
+        function parseapexpage(codelines, fileid, visualforcePage, visualforceURL, isaura)
+        {
+       
+        var codeline = codelines.split('\n');
+        updateMessages('+ Analyzing ' + visualforcePage + ' ...');
+        for(var i = 0;i < codeline.length;i++)
+        {
+        if(codeline[i].toLowerCase().match(escapeXSS) || codeline[i].toLowerCase().match(auraescapeXSS) || codeline[i].toLowerCase().match(innerJSBlocks) || codeline[i].toLowerCase().match(innerHTMLBlocks))
+        {
+        var codelineno = i+1 ;
+         its = {} 			
+                    its['exploit'] = 'Potential XSS due to disabled escaping @ ' + visualforcePage + ' line ' + codelineno;
+                    its['variable'] = 'NA';
+                    its['url'] = 'NA';
+                    its['file'] = visualforcePage;
+                    its['line'] = i+1;
+                    its['typed'] = '3';
+                    its['code'] = btoa(codeline[i]);    
+		            its['severity'] = 'Medium';
+                    vulnerabilities.push(its);
+                    vulncount++;
+        }
+        if(foundControllers == 0){
+        $.each(apexControllerobjs, function(ix, objt) {
+        if(codeline[i].toLowerCase().match(objt.regularex))
+        {
+        foundControllers = 1;
+        var tempecls = [];
+        var strx = codeline[i].toLowerCase().indexOf(objt.rawobject);
+        strx = strx + objt.rawobject.length;
+        var nd = codeline[i].slice(strx);
+        var znd = nd.indexOf(' ');
+        var collss = nd.split('"');
+        its = {}
+        its['controller'] = collss[0];
+      
+        $.each(MetaDataFilenames, function(inx, o)
+        {
+        if(o.file == visualforcePage){      
+        o['apexControllers'].push(its);
+       if(codeline[i].toLowerCase().indexOf('action') >1){
+        
+        var initAction =codeline[i].slice(codeline[i].toLowerCase().indexOf('action')+10);
+        initAction = initAction.slice(0,initAction.indexOf("\"")-1);
+        o.initaction = initAction;
+        }
+        return false;//new
+        }
+        });
+        
+        var extcnt = "extensions\=";
+        var extracnts = codeline[i].toLowerCase().indexOf(extcnt);
+        if(extracnts > 0){
+        strx = extracnts + extcnt.length;
+        var extControllers = codeline[i].slice(strx);
+        var extControlls = extControllers.split('"');
+        var ecls = extControlls[1].split(',');         
+        $.each(ecls, function(index, obj){
+        $.each(MetaDataFilenames, function(inx, o)
+        {
+        if(o.file == visualforcePage){
+	        itss = {}
+	        itss['controller'] = obj; 
+	        o['apexControllers'].push(itss);
+	        return false;
+        }
+        });
+        });
+        
+        }
+        
+       /* if(codeline[i].toLowerCase().indexOf('action') >1){
+        
+        var initAction =codeline[i].slice(codeline[i].toLowerCase().indexOf('action')+10);
+        initAction = initAction.slice(0,initAction.indexOf("\"")-1);
+        
+        
+         $.each(MetaDataFilenames, function(inx, o)
+        {
+        if(o.file == visualforcePage){
+	        o.initaction = initAction;
+        }
+        });
+        }*/
+        }
+        });
+        }
+        
+        
+        
+        $.each(requestobjects, function(ix, objt) {
+        if(codeline[i].toLowerCase().match(objt.regularex))
+        {
+        var start = codeline[i].toLowerCase().indexOf(objt.rawobject);
+        start = start + objt.rawobject.length;
+        var end = codeline[i].slice(start);
+        var zend = end.indexOf("}");
+        var dots = end.slice(0,zend);
+        var fuzunique = 0;
+        $.each(fuzzedinputs, function(i, obj) {
+        if(obj.url == visualforceURL && obj.variabletotest == dots.trim())
+        {
+        fuzunique = 1;
+        }
+        });
+        if(fuzunique == 0){
+        item = {}
+                item ["url"] = visualforceURL;
+                item ["variabletotest"] = dots.trim();
+                item ["method"] = objt.method;
+                item ["linenumber"] = i+1;
+                item ["vfpage"] = visualforcePage;
+                item ["id"] = fileid;
+        fuzzedinputs.push(item);
+        jsonString = JSON.stringify(fuzzedinputs);
+        }
+        }
+        });
+        if(isaura == 1 && codeline[i].trim() != ''){
+          var codelssa = codeline[i].trim();
+        	 if(codelssa.match(dcUsage) || codelssa.match(dcUsage1) || codelssa.match(dcUsage3) || codelssa.match(dcUsage4))
+        	 {
+        	 
+        	 
+        	 		var codelineno = i+1 ;
+         	/*		its = {} 			
+                    its['exploit'] = 'Accessing DOM using document or window object is not allowed in Lightning ' + visualforcePage + ' line ' + codelineno;
+                    its['variable'] = 'NA';
+                    its['url'] = 'NA';
+                    its['file'] = visualforcePage;
+                    its['line'] = i+1;
+                    its['typed'] = '3';
+                    its['code'] = btoa(codeline[i]);    
+		            its['severity'] = 'Medium';
+                    vulnerabilities.push(its);
+                    vulncount++;*/
+        	 }
+        	 if(codelssa.match(dcUsage2))
+        	 {
+        	 
+        	 	var codelineno = i+1 ;
+         			its = {} 			
+                    its['exploit'] = 'Accessing XMLHTTPRequest with LockerService not allowed  ' + visualforcePage + ' line ' + codelineno;
+                    its['variable'] = 'NA';
+                    its['url'] = 'NA';
+                    its['file'] = visualforcePage;
+                    its['line'] = i+1;
+                    its['typed'] = '3';
+                    its['code'] = btoa(codeline[i]);    
+		            its['severity'] = 'Medium';
+                    vulnerabilities.push(its);
+                    vulncount++;
+        	 }
+        	 
+        	 
+		     
+       
+        }
+
+        }
+        var temp = visualforcePage.replace('pages\/', '');
+        temp = temp.replace('.page','');
+      var urlparts = temp.split('__');
+      console.log('URLX:' + JSON.stringify(urlparts) + urlparts.length);
+      console.log('SalesforceNamespace ' + SalesforceNamespace);
+     if(urlparts.length>1)
+     {
+     	if(urlparts[0]+'.' == SalesforceNamespace)
+     	{
+     	XSSPostFuzzing(visualforceURL);
+     	}
+     }else
+    	{
+    	console.log('XSSPostFuzzing: ' + JSON.stringify(urlparts) + urlparts.length);
+    	XSSPostFuzzing(visualforceURL);}
+
+        
+        }
+        
+                
+        function XSSPostFuzzing(PostURL)
+        {
+        console.log('XPS: ' + currentexploitcount);
+		if(currentexploitcount < fuzzcountlimit){
+        var inputstofuzz = [];
+        var response;
+            $.ajax({ type: "GET",   
+             url: PostURL,
+             async: false,
+             crossDomain: true,
+             success : function(text)
+             {
+        	inputstofuzz = [];
+                response= text;
+                html = $.parseHTML(response, document, false);                
+                $.each( html, function(i, el){
+                if(el.id == 'contentWrapper')
+                {
+                var oNodeList = el.childNodes;
+                for (var i=0; i<oNodeList.length; i++) {
+               var csrfdivs = oNodeList[i].getElementsByTagName("span");
+               var divs = oNodeList[i].getElementsByTagName("form");
+                for(var k = 0; k < divs.length; k++){
+                if( divs[k].id == 'j_id0:j_id2')
+                {
+                	var allinputs = divs[k].getElementsByTagName("input");
+                	for(var j = 0; j < allinputs.length; j++){
+                    its = {};
+                    its['var'] =  allinputs[j].name
+                    inputstofuzz.push(its);
+                    
+                }
+                }
+                }
+                if(inputstofuzz.length>0)
+                {
+                var csrfvals = '';
+               	for(var k = 0; k < csrfdivs.length; k++){
+               	if(csrfdivs[k].id === undefined){
+               	}
+                else if(csrfdivs[k].id == 'ajax-view-state-page-container')
+                {
+                var allinputs = csrfdivs[k].getElementsByTagName("input");
+                	
+                	for(var j = 0; j < allinputs.length; j++){
+                    csrfvals += allinputs[j].name +'=' +encodeURIComponent(allinputs[j].value) +'&';    
+                }
+                $.each(fuzzer, function(i, obj) {
+                if(currentexploitcount < fuzzcountlimit){
+       			 if(abort())
+            	{
+            		updateMessages('+ Scan aborted ... ');
+            	return;
+            	}
+        		uniqueid++;
+        		var functionalURL = PostURL+'?';
+        		var functionalURL1 = PostURL+'?AJAXREQUEST=_viewRoot&';
+        		 $.each(inputstofuzz, function(index,item){
+        		 var ssvar = item.var.split(':');
+        		 var jssvar = item.var;
+        		 if (ssvar.length > 0){jssvar = ssvar[ssvar.length-1];}
+	        		
+	      			functionalURL += item.var +'='+ obj.exploitstart + jssvar + obj.exploitend +'&';
+	      			functionalURL1 += item.var +'='+ obj.exploitstart + jssvar + obj.exploitend +'&';
+      			
+        		});
+        		functionalURL = functionalURL + '&' + csrfvals;
+        		functionalURL1 = functionalURL1 + '&' + csrfvals;
+
+        temps = {}
+            temps["url"] = PostURL;
+            temps["id"] = uniqueid;
+            temps["variable"] = 'postvariable';
+            temps["exploit"] = obj.exploitstart + uniqueid + obj.exploitend;
+            temps["exploiturl"] = functionalURL;
+            temps["method"] = '';
+            temps["linenumber"] = '';
+            temps["vfpage"] = '';
+            //activeexploitrequests.push(temps);
+            
+            uniqueid++;
+            its = {}
+            its['functionalURL'] = functionalURL;
+            its['fuzzed'] = 'no';
+            its["url"] = PostURL;
+            its["id"] = uniqueid;
+            its["variable"] = 'postvariable';
+            its["exploiturl"] = functionalURL;           
+            xssfunctionalURLs.push(its);
+			currentexploitcount++;
+        
+        	temps = {}
+            temps["url"] = PostURL;
+            temps["id"] = uniqueid;
+            temps["variable"] = 'postvariable';
+            temps["exploit"] = obj.exploitstart + uniqueid + obj.exploitend;
+            temps["exploiturl"] = functionalURL1;
+            temps["method"] = '';
+            temps["linenumber"] = '';
+            temps["vfpage"] = '';
+            //activeexploitrequests.push(temps);
+            
+            its = {}
+            its['functionalURL'] = functionalURL1;
+            its['fuzzed'] = 'no';
+            its["url"] = PostURL;
+            its["id"] = uniqueid;
+            its["variable"] = 'postvariable';
+            its["exploiturl"] = functionalURL1;           
+            xssfunctionalURLs.push(its);
+			currentexploitcount++;      
+			}else{return false;}      
+            });
+		        }
+                
+                }
+                }
+                }
+                }
+                });
+             }
+        });
+       	}
+        sessionStorage.setItem('xssfunctionalURLs', JSON.stringify(xssfunctionalURLs)); 
+        return;
+        }
+        
+        function SOQLInjectiontests()
+        {
+		console.log('Current Exploit ' + currentexploitcount);
+        if(currentexploitcount < fuzzcountlimit){
+        console.log('Current Exploit ' + currentexploitcount);
+        updateMessages('+ Starting SOQL Injection tests ...');
+        $.each(fuzzedinputs, function(i, obj) {
+         if(abort())
+            {
+            updateMessages('+ Scan aborted ... ');
+            return;
+            }
+        $.each(soqlfuzzer, function(index, item) {
+         if(abort())
+            {
+            updateMessages('+ Scan aborted ... ');
+            return;
+            }
+            if(currentexploitcount < fuzzcountlimit){
+        var functionalURL = obj.url+"?"+obj.variabletotest+"="+item.payload;
+        its = {}
+            its['functionalURL'] = functionalURL;
+            its['fuzzed'] = 'no';
+            its['variable'] = obj.variabletotest;
+            soqlfunctionURLs.push(its);
+            currentexploitcount++;
+            console.log(JSON.stringify(soqlfunctionURLs));
+            }else
+                {
+				console.log('Current Exploit:: ' + currentexploitcount);
+                console.log(JSON.stringify(soqlfunctionURLs));
+                return false;}
+        });
+        });
+        sessionStorage.setItem('soqlfunctionURLs', JSON.stringify (soqlfunctionURLs));
+
+        }
+            
+        }
+        function XSSPersistenttests()
+        {
+        updateMessages('+ Starting Persistent & Stored XSS tests ... ');
+        console.log('Id ' + currentexploitcount);
+        currentPersistentXSSURL = '';
+        if(currentexploitcount < fuzzcountlimit){       
+        $.each(MetaDataFilenames, function(i,obj)
+        {
+         if(abort())
+            {
+            updateMessages('+ Scan aborted ... ');
+            return;
+            }
+            $.each(obj.apexControllers, function(x,xbj)
+            {
+             if(abort())
+            {
+            updateMessages('+ Scan aborted ... ');
+            return;
+            }
+            if(fuzzedObjects.length>0){
+            $.each(fuzzedObjects, function(j,jbj)
+            {
+            if(abort())
+            {
+            updateMessages('+ Scan aborted ... ');
+            return;
+            }
+            console.log('SalesforceNamespaceXX ' + SalesforceNamespace+xbj.controller.toLowerCase() + ' jvjv: ' + jbj.name);
+            if(currentexploitcount < fuzzcountlimit){
+            
+            if(SalesforceNamespace+xbj.controller.toLowerCase() == jbj.name)
+                {
+	                var functionalURL = fBaseURL +'apex/'+obj.id+'?id='+jbj.id;
+	                currentPersistentXSSURL = functionalURL;
+	                uniqueid++;
+	                var response;
+	                its ={}
+	                its['functionalURL'] = functionalURL;
+	                its['fuzzed'] = 'no';
+	                persistentxssfunctionalURLs.push(its);
+	                currentexploitcount++;
+                }
+                }
+                else {console.log('here'); return false;}
+            });
+            }
+            
+            });
+        });
+        console.log('Where here');
+        sessionStorage.setItem('persistentxssfunctionalURLs', JSON.stringify (persistentxssfunctionalURLs));
+        currentPersistentXSSURL = '';
+        }
+        }
+        
+        function XSStests()
+        {
+   		updateMessages('+ Start Reflected XSS tests ...');
+        if(currentexploitcount < fuzzcountlimit){
+        $.each(fuzzedinputs, function(i, obj) {
+        if(abort())
+            {
+            updateMessages('+ Scan Aborted ... ');
+            return;
+            }
+        $.each(fuzzer, function(index, item) {
+        if(abort())
+            {
+                updateMessages('+ Scan Aborted ... ');
+                return;
+            }
+if(currentexploitcount < fuzzcountlimit){
+        uniqueid++;
+        var functionalURL = obj.url+"?"+obj.variabletotest+"="+item.exploitstart + uniqueid + item.exploitend;
+            temps = {}
+            temps["url"] = obj.url;
+            temps["id"] = uniqueid;
+            temps["variable"] = obj.variabletotest;
+            temps["exploit"] = item.exploitstart + uniqueid + item.exploitend;
+            temps["exploiturl"] = functionalURL;
+            temps["method"] = obj.method;
+            temps["linenumber"] = obj.linenumber;
+            temps["vfpage"] = obj.vfpage;
+            //activeexploitrequests.push(temps);
+
+            its = {}
+            its['functionalURL'] = functionalURL;
+            its['fuzzed'] = 'no';
+            its["url"] = obj.url;
+            its["id"] = uniqueid;
+            its["variable"] = obj.variabletotest;
+            its["exploit"] = item.exploitstart + uniqueid + item.exploitend;
+            its["exploiturl"] = functionalURL;           
+            xssfunctionalURLs.push(its);
+            currentexploitcount++;
+            }
+               else {return false;}
+            });
+        });
+            
+            sessionStorage.setItem('xssfunctionalURLs', JSON.stringify(xssfunctionalURLs)); 
+        }
+        }
+
+        
+        
+  
+       
+           
+        </script>
+        
+            
+<div id="success"></div>
+
+
+
+<div style="font-family:Helvetica; border-bottom:2px solid; border-color:#3A608D; background-color:#f0f0f6; width:760px;">   
+     <div style="font-size:24px; color:#837F7F;">Saved Scans</div>
+     </div>  
+      
+        <div style="font-family:Helvetica;">    
+        <apex:repeat var="cases" value="{!casos}">
+        <div id="{!JSENCODE(cases.cId)}" style="display:block;width:760px;float:left;">
+        
+        <div style="float:left; margin:5px;  padding:4px 8px 4px 8px; background-color:#f0f0f6; border-bottom:1px solid; border-color:#837F7F;">        
+        <div style="font-size:18px; border-bottom:solid 1px #c0c0c0;"><a href="{!JSENCODE(cases.Id)}" style="color:#3A608D; text-decoration: none; outline: none;" onmouseover="this.style.color='#0D5DDF';" onmouseout="this.style.color='#3A608D';"><apex:outputText id="Subject" value="{!cases.Subject}"></apex:outputText></a>
+        <div style="float:right;"><a style="color:#707070; text-decoration:none; outline:none; font-size:14px; font-weight:bolder;" onmouseover="this.style.color='#000000';" onmouseout="this.style.color='#707070';" href="#" title="Delete this record" onclick="javascript:{!JSENCODE(dotPrefix)}SecurityScan.deleteScan('{!JSENCODE(cases.cId)}',handledeleteResult)">x</a></div></div>
+        
+            <div style="color:#d43f3a;  font-weight:bold; font-size:22px; padding-left:15px; padding-top:5px; float:left; width:165px; height:45px;"><apex:outputText id="desc" value="{!cases.highcount} High"></apex:outputText></div>
+            <div style="color:#fdc431;  font-weight:bold; font-size:22px; padding-left:15px; padding-top:5px; float:left; width:165px; height:45px;"><apex:outputText id="desc1" value="{!cases.mediumcount} Medium "></apex:outputText></div>
+            <div style="color:#357abd;  font-weight:bold; font-size:22px; padding-left:15px; padding-top:5px; float:left; width:165px; height:45px;"><apex:outputText id="desc2" value="{!cases.lowcount} Low "></apex:outputText></div>
+            <div style="color:#aaa0a0;  font-weight:bold; font-size:22px;  padding-left:15px; padding-top:5px; float:left; width:165px; height:45px;"><apex:outputText id="desc3" value="{!cases.activecount} Active"></apex:outputText></div>
+            <div style="float:right; border-top:solid 1px #aaa0a0; margin-left:8px;"><a style="color:#3A608D; text-decoration:none; outline:none; font-size:14px;" onmouseover="this.style.color='#0D5DDF';" onmouseout="this.style.color='#3A608D';" href="{!JSENCODE(cases.Id)}"> View</a></div>
+                        <div style="float:right; border-top:solid 1px #aaa0a0;"><a style="color:#3A608D; text-decoration:none; outline:none; font-size:14px;" onmouseover="this.style.color='#0D5DDF';" onmouseout="this.style.color='#3A608D';" href="/apex/downloadreport?id={!JSENCODE(cases.cId)}" target="_blank"> Download</a></div>
+            
+            </div>
+        </div>
+        
+
+        </apex:repeat> 
+    </div>
+    <div id="mydiv"></div>
+    
+    <script>
+    updateMessages('+ Scan engine initializing ...');
+   	updateMessages('+ Please wait ...');
+    </script>
+   
+    </apex:form>
+ 
+</apex:page>

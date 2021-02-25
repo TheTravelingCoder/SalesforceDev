@@ -1,0 +1,1677 @@
+<apex:page controller="MetadataRetrieveController" action="{!init}" sidebar="true">
+<apex:includeScript value="{!$Resource.s4jquery}"/>
+<apex:includeScript value="{!$Resource.s4jsziputil}"/>
+<apex:includeScript value="{!$Resource.s4jquerytimer}"/>
+<apex:includeScript value="{!$Resource.s4globals}"/>
+
+<apex:includeScript value="/support/console/22.0/integration.js"/>
+<style>
+div.startscanbutton
+{
+background-color:#6C9E61;
+float:left; 
+font: ProximaNovaRegular,Arial,sans-serif;; 
+position: relative; 
+width: 105px; 
+height: 40px; 
+padding: 0; 
+font-size: 22px; 
+color: white; 
+text-align: center; 
+text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); 
+border:solid 1px;
+cursor: pointer;
+}
+div.startscanbutton:hover
+{
+background-color:#598350;
+}
+
+div.abortbutton
+{
+float:left; 
+font: Segoe UI; 
+width: 105px; 
+height: 40px; 
+padding: 0; 
+font-size: 22px; 
+color: white; 
+text-align:center; 
+text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); 
+border: solid 1px; 
+cursor: pointer;
+background-color:#CDCDBC;
+}
+div.abortbutton:hover
+{
+background-color: #a0a0a0;
+}
+
+#overlay-back {
+    position   : absolute;
+    top        : 0;
+    left       : 0;
+    width      : 100%;
+    height     : 100%;
+    background : #000;
+    opacity    : 0.6;
+    filter     : alpha(opacity=60);
+    z-index    : 5;
+    display    : none;
+}
+
+#overlay {
+    position : absolute;
+    top      : 0;
+    left     : 0;
+    width    : 100%;
+    height   : 100%;
+    z-index  : 10;
+    display  : none;
+} 
+
+#overlay-back2 {
+    position   : absolute;
+    top        : 0;
+    left       : 0;
+    width      : 100%;
+    height     : 100%;
+    background : #000;
+    opacity    : 0.6;
+    filter     : alpha(opacity=60);
+    z-index    : 5;
+    display    : none;
+}
+
+#overlay2 {
+    position : absolute;
+    top      : 0;
+    left     : 0;
+    width    : 100%;
+    height   : 100%;
+    z-index  : 10;
+    display  : none;
+} 
+
+#overlay-back3 {
+    position   : absolute;
+    top        : 0;
+    left       : 0;
+    width      : 100%;
+    height     : 100%;
+    background : #000;
+    opacity    : 0.6;
+    filter     : alpha(opacity=60);
+    z-index    : 5;
+    display    : none;
+}
+
+#overlay3 {
+    position : absolute;
+    top      : 0;
+    left     : 0;
+    width    : 100%;
+    height   : 100%;
+    z-index  : 10;
+    display  : none;
+} 
+
+#overlay-back4 {
+    position   : absolute;
+    top        : 0;
+    left       : 0;
+    width      : 100%;
+    height     : 100%;
+    background : #000;
+    opacity    : 0.6;
+    filter     : alpha(opacity=60);
+    z-index    : 5;
+    display    : none;
+}
+
+#overlay4 {
+    position : absolute;
+    top      : 0;
+    left     : 0;
+    width    : 100%;
+    height   : 100%;
+    z-index  : 10;
+    display  : none;
+}
+</style>
+<div id="overlay-back2"></div>
+<div id="overlay2">
+<div id="basicModalContent" name="basicModalContent" style=" display:block; position:absolute; /* width: 65%; */ height: auto; background-color: rgba(253, 253, 253, 0.98); z-index: 400; margin-top: 80px; margin-left:250px">
+
+<div style="margin: 50px;opacity: 9.9; width: 90%;display: block;color: #888484;font-family: 'Segoe UI' sans-serif;font-size: 16px;font-weight: 600;">
+  <div style="border-bottom:1px solid #aaa0a0;">
+  <h2>The security scan is starting, do not close this browser window... </h2>
+  <h2>An email will be sent to you upon completion of this scan... </h2><br></br><br></br>
+  </div>
+
+<br></br><br></br>
+<div class="startscanbutton" onclick="$('#overlay2,#overlay-back2').fadeOut(1000);  beginscan();">OK</div>
+<div class="abortbutton" onclick="updateMessages('+ Scan cancelled ...');$('#overlay2,#overlay-back2').fadeOut(1000); document.getElementById('scanspinner').style.display = 'none';">Cancel</div>
+<br></br><br></br>
+</div>
+</div>
+</div>
+
+
+<div id="overlay-back3"></div>
+<div id="overlay3">
+<div id="basicModalContent" name="basicModalContent" style=" display:block; position:absolute; /* width: 65%; */ height: auto; background-color: rgba(253, 253, 253, 0.98); z-index: 400; margin-top: 80px; margin-left:250px">
+<a href="#" onclick="javascript:$('#overlay3,#overlay-back3').fadeOut(1000);" id="modalhelpclose" style="position:relative; float: right;font-family: 'Segoe UI' sans-serif;font-size: 16px;padding-right: 7px;font-weight: 700;/* border: 1px solid maroon; */text-decoration: none;color: #837F7F; " onmouseover="this.style.color='#000';" onmouseout="this.style.color='#837F7F';">x</a>
+<div style="margin: 50px;opacity: 9.9; /* background-color: #c0c0c0; */ width: 90%;display: block;color: #888484;font-family: 'Segoe UI' sans-serif;font-size: 16px;font-weight: 600;">
+
+  <div style="border-bottom:1px solid #aaa0a0;">
+  <h2>Simple two step process ...</h2><br></br><br></br>
+  </div>
+
+  <span style="     /* color: #000; */">1.</span> Simply Click on Scan and leave the browser window open<br></br>
+  <span style="     /* color: #000; */">2.</span> You will receive an email once the scan completes<br></br>
+  <br></br><br></br>
+
+  These step are shown in the following figure: <br></br><br></br>
+<img src="{!$Resource.scanhelp}" style="border: 2px solid #888;width: 540px;"> </img>
+</div>
+</div>
+</div>
+
+<div id="overlay-back4"></div>
+<div id="overlay4">
+<div id="basicModalContent" name="basicModalContent" style=" display:block; position:absolute; /* width: 65%; */ height: auto; background-color: rgba(253, 253, 253, 0.98); z-index: 400; margin-top: 80px; margin-left:250px">
+<a href="#" onclick="javascript:$('#overlay4,#overlay-back4').fadeOut(1000);" id="modalhelpclose" style="position:relative; float: right;font-family: 'Segoe UI' sans-serif;font-size: 16px;padding-right: 7px;font-weight: 700;/* border: 1px solid maroon; */text-decoration: none;color: #837F7F; " onmouseover="this.style.color='#000';" onmouseout="this.style.color='#837F7F';">x</a>
+<div style="margin: 50px;opacity: 9.9; /* background-color: #c0c0c0; */ width: 90%;display: block;color: #888484;font-family: 'Segoe UI' sans-serif;font-size: 16px;font-weight: 600;">
+
+  <div style="border-bottom:1px solid #aaa0a0;">
+  <h2>Browser not supported...</h2><br></br><br></br>
+  </div>
+
+  <span>1.</span> Only Google Chrome or Mozilla FireFox are supported<br></br>
+  <br></br>
+  <br></br><br></br>
+
+  
+</div>
+</div>
+</div>
+
+
+<a id="some-button" href="#"></a>
+<div id="overlay-back"></div>
+<div id="overlay">
+<div id="basicModalContent" name="basicModalContent" style=" display:block; position:absolute; /* width: 65%; */ height: auto; background-color: rgba(253, 253, 253, 0.98); z-index: 400; margin-top: 80px; margin-left:250px">
+<a href="#" id="modalclose" style="position:relative; float: right;font-family: 'Segoe UI' sans-serif;font-size: 16px;padding-right: 7px;font-weight: 700;/* border: 1px solid maroon; */text-decoration: none;color: #837F7F;" onclick="javascript:$('#overlay,#overlay-back').fadeOut(1000);" onmouseover="this.style.color='#000';" onmouseout="this.style.color='#837F7F';">x</a>
+<div style="margin: 50px;opacity: 9.9; /* background-color: #c0c0c0; */ width: 90%;display: block;color: #888484;font-family: 'Segoe UI' sans-serif;font-size: 16px;font-weight: 600;">
+ <div style="border-bottom:1px solid #aaa0a0;">
+  <h2>Two additional steps required to configure the security scanner ...</h2><br></br><br></br>
+  </div>
+<div style="float:left; width:320px; padding:10px; border-right:1px solid #ccc; margin:10px;">
+ 
+  <h1 style="text-align:center; color: #000;float: left;margin-left: 100px;"> Step 1 </h1><br></br>
+Go to <a href="https://na11.salesforce.com/0rp/e?retURL=" target="_blank" style="
+    text-decoration: none; color:#2687E8;
+">Setup &gt; Security Controls &gt; Remote site settings</a><br></br><br></br>
+  <span style="color: #000;">1.</span> Type any name in "Remote Site Name"<br></br>
+  <span style="color: #000;">2.</span> <div id="remoteurl"></div> 
+  <span style="color: #000;">3.</span> Click on "Save"<br></br><br></br>
+
+  These step are shown in the following figure: <br></br><br></br>
+<img src="{!$Resource.mdapiremote}" style="border: 2px solid #888;width: 280px;"> </img>
+</div><div style="float:left; width:320px; padding:10px; margin:10px;">
+  <h3 style="text-align:center; color: #000;float: left;margin-left: 100px;">Step 2</h3><br></br>
+  Go to <a href="https://na11.salesforce.com/_ui/system/security/SessionSettings" target="_blank" style="
+    text-decoration: none; color:#2687E8;
+">Setup &gt; Security Controls &gt; Session Settings</a><br></br><br></br>
+  <span style="color: #000;">1.</span> Uncheck "Lock sessions to the IP address from which they originated"<br></br>
+  <span style="color: #000;">2.</span> Uncheck "Lock sessions to the domain in which they were first used"<br></br> 
+  <span style="color: #000;">3.</span> Click on "Save"<br></br><br></br>
+    These step are shown in the following figure: <br></br><br></br>
+<img src="{!$Resource.securitysettings}" style="border: 2px solid #888;width: 280px;"> </img>
+</div>
+</div>
+</div>
+</div>
+
+
+<script>
+
+
+$('#helpbutton').on('click', function () {
+    $('#overlay3, #overlay-back3').fadeIn(500);
+});
+
+$('#modalclose').on('click',function(){
+$('#overlay,#overlay-back').fadeOut(1000);
+});
+
+$('modalhelpclose').on('click',function(){
+$('#overlay3,#overlay-back3').fadeOut(1000);
+});
+
+ 		if ((navigator.userAgent.search('Chrome') >= 0) || (navigator.userAgent.search('Firefox') >= 0))
+		{
+        
+		 }
+		 else
+		 {
+		  $('#overlay4, #overlay-back4').fadeIn(500);
+		 }
+
+function resetSessionStorage()
+        {
+           sessionStorage.setItem('scannerrunning', 'no');
+		   sessionStorage.setItem('startfuzzing','no');
+		   sessionStorage.setItem('fuzzingcomplete','no');
+		   sessionStorage.setItem('soqltests','no');
+		   sessionStorage.setItem('xsstests','no');
+		   sessionStorage.setItem('persistentxsstests','no');
+		   sessionStorage.setItem('vulncount', 0);
+		   sessionStorage.setItem('vulnerabilities','[]');
+		   sessionStorage.setItem('xssfunctionalURLs','[]');
+		   sessionStorage.setItem('persistentxssfunctionalURLs','[]');
+		   sessionStorage.setItem('soqlfunctionURLs','[]');
+		   sessionStorage.setItem('abort','no');
+        }
+        
+        function handlevulnResult(result, event) {
+        if (event.status && !(result.indexOf('failure') !=-1)) {
+        console.log('oooOOOOOOoooOoO' + result);            
+        updateMessages('+  Vulnerabilities saved... '); 
+        updateMessages('+  View the scan results ' + result ); 
+        document.getElementById('scanresults').style.display = 'block';
+		var ax = document.getElementById('scanresults'); //or grab it by tagname etc
+		ax.href = result;                
+		document.getElementById('scanspinner').style.display = 'none';                                                     
+		resetSessionStorage();
+        }
+        else
+        {
+        console.log('Call failed'+ event.status);
+        updateMessages('+  Failed to save vulnerabilities... '); 
+        updateMessages('+  Error ' + result ); 
+        }  
+        }
+
+
+if(sessionStorage.getItem('fuzzingcomplete')== 'no')
+{
+	resetSessionStorage();
+		   
+}
+else if(sessionStorage.getItem('fuzzingcomplete')== 'yes')
+{
+
+updateMessages('+ Saving '+ sessionStorage.getItem('vulncount') + ' Vulnerabilities ...');
+vulnsjsn = sessionStorage.getItem('vulnerabilities');
+/*digitsec.*/MetadataRetrieveController.logVulns(vulnsjsn,handlevulnResult);
+
+}
+
+       
+        function updateMessages(message)
+        {
+        $('#statusupdates').val($('#statusupdates').val() + "\n" + message);
+        }
+        
+        var files = [];
+       
+        //var fBaseURL = BaseURL.slice(0, slicess);
+        var uniqueid = 0;
+        var foundControllers = 0;
+        var vulnerabilities =[];
+        var activeexploitrequests =[];
+        var vulncount =0;
+        var SOQLInjection = "(select|insert|update|delete|restore)+\\s+\\w+\\,*\\s*\\s+(from)+\\s+\\w+\\s+(where)+\\s+\\w+\\s*\=+\\s*\'+\\s*\\++";
+        var escapeXSS = "\\s*\\w*\\s*(escape)+\\s*=\\s*\"+(false)+\"+";
+		//var SOQLInjection = "(select|insert|update|delete|restore)+\\s+(\\w+\\,\\s+|\\w)+\\s+(from)+\\s+\\w+\\s+(where)+\\s+\\w+\\s+\=+\\s*\'+";
+        //var codeblocks = [{"file":"","startline":"", "endline": ""}];
+        var codeblocks = [];
+        var startlineregex = "(\{)";
+        var endlineregex = "(\})";
+        var xssfunctionalURLs =[];
+        var soqlfunctionURLs = [];
+        var persistentxssfunctionalURLs = [];
+        var scancompleteTimeoutId;
+        //var foundfuncs = [{"file":"","intfuncs": [ "line":"", "id":"", "mitigated":"0=No, 1=Yes", "verified": "0=No, 1=Yes"]}];
+        var foundfuncs = [];
+        
+        var DMLfuncs = [{"DMLfunc":"1","protectfuncs":[{"pfunc":"2"},{"pfunc": "3"}, {"pfunc": "4" }]},
+        {"DMLfunc":"5","protectfuncs":[{"pfunc":"6"},{"pfunc": "7"}, {"pfunc": "8" }]},
+        {"DMLfunc":"9","protectfuncs":[{"pfunc":"10"},{"pfunc":"11"},{"pfunc": "12"}]}
+        ];
+        
+        var interestingfuncs = [{"id": "1", "func":"\\s*\\w*\\s*(insert\\s+|undelete\\s+|insert\\s*\\(|undelete\\s*\\()"},
+            {"id": "2", "func":"\\s*\\w*\\s*(isCreateable\\s*\\()"},
+            {"id": "3", "func":"\\s*\\w*\\s*(isAuthorizedToCreate\\s*\\()"},
+            {"id": "4", "func":"\\s*\\w*\\s*(insertAsUser\\s*\\()"},
+            {"id": "5", "func":"\\s*\\w*\\s*(update\\s+|merge\\s+|update\\s*\\(|merge\\s*\\()"},
+            {"id": "6", "func":"\\s*\\w*\\s*(updateAsUser\\s*\\()"},
+            {"id": "7", "func":"\\s*\\w*\\s*(isAuthorizedToUpdate\\s*\\()"},
+            {"id": "8", "func":"\\s*\\w*\\s*(isUpdateable\\s*\\()"},
+            {"id": "9", "func":"\\s*\\w*\\s*(delete\\s+|delete\\s*\\()"},
+            {"id": "10", "func":"\\s*\\w*\\s*(isDeleteable\\s*\\()"},
+            {"id": "11", "func":"\\s*\\w*\\s*(deleteAsUser\\s*\\()"},
+            {"id": "12", "func":"\\s*\\w*\\s*(isAuthorozedToDelete\\s*\\()"}
+            ];
+        
+        var apexControllerobjs = [
+        {"regularex":"(\\<apex\\:page controller\\=)","rawobject":"\\<apex:page controller\\=", "method": "POST"},        
+        {"regularex":"(\\<apex\\:page standardController\\=)","rawobject":"\\<apex:page standardController\\=", "method": "POST"}
+        ];
+        
+        
+        var requestobjects = [
+        {"regularex":"(\\!\\\\$Request)","rawobject":"!$Request.", "method": "GET"},        
+        {"regularex":"(\\!\\\\$CurrentPage\\.parameters)","rawobject":"!$CurrentPage.parameters.", "method": "GET"},
+        {"regularex":"(\\!\\\\$CurrentPage)","rawobject":"!$CurrentPage.", "method": "GET"}
+        ];
+        
+        var requestApexobjects = [
+        {"regularex":"(ApexPages\\.currentPage\\(\\)\\.getParameters\\(\\)\\.get)","rawobject":"ApexPages\.currentPage\(\)\.getParameters\(\)\.get", "method":"GET"}
+        ];
+        
+         var soqlfuzzer = [{"payload":"'","errorelem":"theErrorPage\\\\:theError","error":"(mismatched character \'\&lt\;EOF\&gt\;\' expecting \'\'\')"}];
+        
+         var needanalyzed = 1;        
+         var fuzzedinputs = [];
+         var iscallbackdone;
+         var myTimerVar; 
+         var currentasyncid;       
+         var asynccallid = 0 ;
+         var asyncreturnid = 0;
+         var RemoteSiteError="{!JSENCODE(RemoteSiteError)}";
+         var baseSFURL="{!JSENCODE(baseSFURL)}";
+         var nmprefix="{!JSENCODE(nmprefix)}";
+         var vfBaseURL="{!JSENCODE(vfBaseURL)}";
+         
+       
+        var BaseURL = document.location.href;
+        var slicess = BaseURL.indexOf('apex/');
+        //var fBaseURL = vfBaseURL;
+        var fBaseURL = BaseURL.slice(0, slicess)
+          
+         document.getElementById("remoteurl").innerText="Copy & Paste " + baseSFURL + ' in "Remote Site URL"';
+         
+         if(RemoteSiteError == '1')
+          {
+          console.log ('There is no remoting enabled. Please visit this URL to add this Salesforce Metadata API URL: https://na11.salesforce.com/0rp/e');
+          
+          }
+          if(!("{!JSENCODE(MetaDataFilenames)}" == "[]")){
+         var MetaDataFilenames = $.parseJSON(atob("{!JSENCODE(MetaDataFilenames)}"));
+         var fuzzedObjects = $.parseJSON(atob("{!JSENCODE(fuzzedObjects)}"));
+         console.log(JSON.stringify(fuzzedObjects));
+         }
+         else
+         {
+            console.log('+ There is no remoting enabled. Please visit this URL to add this Salesforce Metadata API URL: https://na11.salesforce.com/0rp/e ...'); 
+            $('#overlay, #overlay-back').fadeIn(500);
+            //$('#basicModalContent').show(1000);
+         }
+         var currentPersistentXSSURL="";
+        //console.log(MetaDataFilenames);
+         var limit = 20; // limit the number of metadata files received from the metadata API
+         var x = 0;
+         var y = 0;
+         var tempmdclassfiles =[];
+         var tempmdpagefiles =[];
+         var asyncids = [];
+         console.log(JSON.stringify(MetaDataFilenames));
+   
+         
+         
+
+         
+         
+        // beginscan()
+         function beginscan()
+         {
+         if(sessionStorage.getItem('startfuzzing')=='yes'){resetSessionStorage();}
+         //$("scanspinner").show("slow", function(){});
+         if(!(MetaDataFilenames.length < limit)){
+         $.each(MetaDataFilenames, function(i, obj) {
+         
+         if(obj.isApexPage == 0 && x < limit)
+         {
+         tempmdclassfiles.push(obj.id);
+         x++;
+         }
+         if(obj.isApexPage == 1 && y < limit)
+         {
+         tempmdpagefiles.push(obj.id);
+         y++;
+         }
+         
+         
+         if(x==limit)
+         {
+         x=0;
+         asynccallid++;
+         /*digitsec.*/MetadataRetrieveController.jsretrieveMetadataClass(tempmdclassfiles,handleasyncResult);
+         tempmdclassfiles = [];
+         }
+         if(y==limit)
+         {
+         y=0;
+         console.log(tempmdpagefiles);
+         asynccallid++;
+         /*digitsec.*/MetadataRetrieveController.jsretrieveMetadataPage(tempmdpagefiles,handleasyncResult);
+         tempmdpagefiles = [];
+         }
+        
+         });
+         }
+         else
+         {
+         $.each(MetaDataFilenames, function(i, obj) {
+         if(obj.isApexPage == 0)
+         {
+         tempmdclassfiles.push(obj.id);
+         
+         }
+         if(obj.isApexPage == 1 )
+         {
+         tempmdpagefiles.push(obj.id);
+         
+         }
+         });
+         }
+         console.log(tempmdpagefiles);
+		 console.log(tempmdclassfiles);
+         asynccallid++;
+         /*digitsec.*/MetadataRetrieveController.jsretrieveMetadataClass(tempmdclassfiles,handleasyncResult);
+         asynccallid++;
+         /*digitsec.*/MetadataRetrieveController.jsretrieveMetadataPage(tempmdpagefiles,handleasyncResult);
+         asynccallid++;
+         /*digitsec.*/MetadataRetrieveController.jsretrieveSecuritySettings('test',handleasyncResult);
+         iscallbackdone = 1;
+         }
+         
+         var timer = $.timer(function() {
+       //  console.log('hereistis' + currentasyncid);
+         /*digitsec.*/MetadataRetrieveController.jscheckAsyncRequest(currentasyncid,handleasyncRes)
+        });
+         
+         function handleasyncRes(result, event)
+         {
+         if (event.status && !(result == '0')) 
+         {
+         //console.log('Async ID:' + result);
+      		 timer.stop();
+      		 ggunzip(result, MetaDataFilenames);
+      		 
+      	 } 
+      	 else
+      	 {
+      	 timer.stop();
+      	 }
+             
+         return;
+         }
+         
+         function handledeleteResult(result, event) 
+         {
+        	console.log(event.status);
+        	console.log(result);
+         	
+			
+
+         if (event.status && !(result == 'failure')) 
+         {
+ 
+//       document.getElementById(result).style.display="none";
+
+		 elem = document.getElementById(result);
+         elem.style.backgroundColor="rgb(253, 244, 119)";
+         elem.innerHTML="Scan Record Deleted";
+		 elem.style.borderBottom="solid 1px rgb(245, 104, 104)";
+		 elem.style.paddingTop="45px";
+         elem.style.textAlign="center";
+         elem.style.fontSize="x-large";
+		 elem.style.width="750px";
+		 elem.style.height="70px";
+         elem.style.marginLeft="5px";
+ 		 elem.style.color="#a0a0a0";         
+		 document.location.hash = result;
+
+
+
+
+
+  //   	 $(result).hide(1000);
+      	
+         } 
+         
+         return;
+         }
+         
+         function handleasyncResult(result, event) 
+         {
+        
+         asyncreturnid++;
+         if (event.status && !(result == '0')) 
+         {
+        // console.log('Async ID:' + result);
+      	 asyncids.push(result);
+      	
+         } 
+         console.log('here are all the asyncids: '+ asyncreturnid + ':' + asynccallid + ':' + iscallbackdone);
+         if (asyncreturnid == asynccallid && iscallbackdone == 1)
+         {
+         console.log('here are all the asyncids: '+ asyncids);
+         grabasyncresponse();
+         
+        
+         }
+         
+         return;
+         }
+        
+        function grabasyncresponse()
+        {
+        console.log('grabasycnresponse called ' + asyncids.length);
+        if(!(asyncids.length <= 0))
+        {
+        currentasyncid = asyncids.pop();
+        timer.set({ time : 8000, autostart : true });
+        }
+        else
+        {
+		    //CAUTION - BEGIN FUZZING
+           updateMessages('+ Beginning Fuzz Testing ...'); 
+           beginFuzzTesting();
+            
+            vulnsjsn = JSON.stringify(vulnerabilities);
+            console.log(vulnsjsn);
+            //alert(vulnsjsn);
+			//   vulnsjsn = $.base64.encode(vulnsjsn);
+           // console.log('Complete');
+           	//console.log(JSON.stringify(MetaDataFilenames));
+            //Visualforce.remoting.timeout = 120000; 
+            
+            
+        // Visualforce.remoting.timeout = 150000;
+          
+         /*Loging Vulns*/
+        //updateMessages('+ Saving '+ vulncount + ' Vulnerabilities ...');
+      //  /*digitsec.*/MetadataRetrieveController.logVulns(vulnsjsn,handlevulnResult);
+        }
+        }
+        
+        function beginFuzzTesting()
+        {
+           updateMessages('+ Beginning Fuzz Testing ...');
+           SOQLInjectiontests();
+		   XSStests();
+           XSSPersistenttests();
+           sessionStorage.setItem('vulnerabilities', JSON.stringify (vulnerabilities));
+           sessionStorage.setItem('vulncount', vulncount);
+           sessionStorage.setItem('scannerrunning', 'yes');
+		   sessionStorage.setItem('startfuzzing','yes');
+		   sessionStorage.setItem('fuzzingcomplete','no');
+		   sessionStorage.setItem('soqltests','yes');
+		   sessionStorage.setItem('xsstests','no');
+		   sessionStorage.setItem('persistentxsstests','no');
+		   
+		   
+		   
+           //$("#frame").attr("src", {!baseSFURL}+"{!$Page.SecurityFuzzer}");
+           console.log('opening window')
+                     
+         //  document.location.href="{!$Page.SecurityFuzzer}";
+	 		
+         }
+         
+        
+        
+        function abort()
+        {
+        
+        
+        if(sessionStorage.getItem('abort') == 'yes')
+        {
+        	updateMessages(' + Abort scan initiated ...');
+        	location.reload();
+        	return true;
+        }
+        return false;
+        }
+        
+                
+        
+
+</script>
+
+    <apex:form id="form" >
+    
+       
+        
+        <div style="font-family:Segoe UI; border-bottom:3px solid;   border-color: #3A608D; height:64px; width:760px; background-color:#f0f0f6;">   
+     <div style="font-size:34px; color:#837F7F;"><img style="width:90px;height:60px; float:left; padding:2px;" src="{!$Resource.S3_square_300dpi}" /> <div style="padding-top:6px; float:left; width:430px;">Salesforce Security Scan (S3)</div><div style="float: right; padding-top:40px; font-size:13px"><a id="helpbutton" onclick="javascript:$('#overlay3, #overlay-back3').fadeIn(500);" href="#" style="color:#3A608D; text-decoration: none; outline: none;" onmouseover="this.style.color='#0D5DDF';" onmouseout="this.style.color='#3A608D';">Help</a></div></div>
+     </div>
+        
+        
+        <apex:pageMessages id="messages"/>
+        <!-- <apex:actionPoller action="{!checkAsyncRequest}" interval="5" rerender="form" rendered="{!NOT(ISNULL(AsyncResult))}"/> -->
+        
+            
+                <div style="width:750px; height:190px; font-family:Segoe UI; padding-top:4px;">
+                <div style="width:180px; float:left;"></div>
+                <div style="width:254px; float:left; padding-left:5px;">
+                <div class="startscanbutton" onclick="updateMessages('+ Scan started ...');document.getElementById('scanspinner').style.display = 'block'; $('#overlay2, #overlay-back2').fadeIn(500);">Scan</div>
+                <div class="abortbutton" onclick="javascript:sessionStorage.setItem('abort','yes');">Stop</div>
+                <div id="scanspinner" class="settings" style="display:none; float:left; width:36px; height:50px"><img src="{!$Resource.green_progress}" /></div>
+                <div class="settings" style="float:left; width:200px; height:50px"> <a id="scanresults" style="display:none;">Scan completed view results </a></div>
+                </div>
+                <div style="width:490px; height:180px; float:left;">
+           		<textarea id="statusupdates" spellcheck="false" style="font-size:small; border: solid 1px #aaa0a0;width:490px; height:180px; float:left; font-family:Segoe UI; color:rgb(131, 127, 127);"></textarea>
+           		</div>
+                </div>
+                
+        
+      
+		
+        
+       <script>
+      
+        
+        
+       
+       function ggunzip(MetaDRetrieveZip, MetaDataFilenames)
+       {
+       		var iter = 0;
+            var zip = new JSZip(MetaDRetrieveZip, {base64:true});
+            var visualForceURL = '';            
+            for(zip.file in zip.files)
+            {
+            iter = iter+1;
+            console.log('::::::::'+zip.file);
+            if(abort())
+            {
+            updateMessages('+ Scan aborted ... ');
+            return;
+            }
+           // console.log(zip.file);
+           // alert(zip.files[zip.file].asText());
+            
+            $.each(MetaDataFilenames, function(i, obj) {
+           //   alert(obj.file);
+           
+            var zipfilename = obj.file;
+            
+            if(obj.isApexPage == '1'){
+            visualForceURL = fBaseURL +'apex/'+obj.id;
+            //visualForceURL = 'https://' + obj.nmprefix +''+ vfBaseURL +'apex/'+obj.id;
+            }
+             
+           // console.log(zipfilename);
+            //alert(visualForceURL);
+            //alert(zip.files[zip.file].asText());
+                if (zip.file == zipfilename)
+                {
+                    foundControllers = 0;
+                    //alert(zip.files[zip.file].asText());
+                    var codelines = zip.files[zip.file].asText(); 
+                    
+                    
+                    var iscommentblock = 0;
+                                        
+                    if(obj.isApexPage == '1'){
+                    try
+                    {
+                    console.log('::::'+zipfilename);
+                    /*setTimeout(function(){*/ parseapexpage(codelines, obj.id, zipfilename, visualForceURL);/*}, 10000*iter);*/
+                    
+                    }
+                    catch(err)
+                    {
+                      console.log(err.message);
+                    }
+                    
+                    
+                    }else if(obj.isApexPage == '0')
+                    {
+                    console.log ('here' + codelines + obj.id + zipfilename + visualForceURL )
+                    /*setTimeout(function(){*/ parseapexclass(codelines, obj.id, zipfilename, visualForceURL);/*}, 30000*iter);*/
+                    }
+                    
+                }
+                });
+                if(zip.file == 'settings/Security.settings')
+                {
+
+                    console.log(zip.files[zip.file].asText());
+                	anlyzeSecuritySettings(zip.files[zip.file].asText());
+                }
+            }
+            
+            
+            console.log(JSON.stringify(codeblocks));
+            console.log(JSON.stringify(foundfuncs));  
+            //alert(JSON.stringify(vulnerabilities));
+            console.log(JSON.stringify(fuzzedinputs));
+            grabasyncresponse();
+            //CAUTION - BEGIN FUZZING
+         /*   
+            XSStests();
+            XSSPersistenttests();
+            SOQLInjectiontests();
+          */  
+            //vulnsjsn = JSON.stringify(vulnerabilities);
+            //console.log(vulnsjsn);
+            //alert(vulnsjsn);
+          //vulnsjsn = $.base64.encode(vulnsjsn);
+           // console.log('Complete');
+           	//console.log(JSON.stringify(MetaDataFilenames));
+            //Visualforce.remoting.timeout = 120000; 
+            
+            
+           // Visualforce.remoting.timeout = 150000;
+
+            
+            
+         /*Loging Vulns*/
+            //updateMessages('+ Saving '+ vulncount + ' Vulnerabilities ...');
+            
+       //     /*digitsec.*/MetadataRetrieveController.logVulns(vulnsjsn,handlevulnResult);
+                  
+			
+			
+//            logVulns(vulnsjsn, vulncount);
+            //console.log(vulnsjsn);
+            //var foobar = zip.files[zip.file].asText();
+            //var lines = foobar.split('\n');
+
+        }
+        
+       
+        function anlyzeSecuritySettings (filetext)
+        {
+   	        updateMessages('+ Analyzing security settings ...');
+        	var xml = $.parseXML(filetext);
+        	$xml = $(xml);
+        	$complexity = $xml.find('complexity');
+        	$expiration = $xml.find('expiration');
+        	$historyRestriction = $xml.find('historyRestriction');
+        	$lockoutInterval = $xml.find('lockoutInterval');
+        	$maxLoginAttempts = $xml.find('maxLoginAttempts');
+        	$minPasswordLength = $xml.find('minPasswordLength');
+        	$questionRestriction = $xml.find('questionRestriction');        	
+
+        	$enableCSRFOnGet = $xml.find('enableCSRFOnGet');
+	       	$enableCSRFOnPost = $xml.find('enableCSRFOnPost');
+        	$enableClickjackNonsetupSFDC = $xml.find('enableClickjackNonsetupSFDC');
+	       	$enableClickjackNonsetupUser = $xml.find('enableClickjackNonsetupUser');
+        	$enableClickjackSetup = $xml.find('enableClickjackSetup');
+        	$sessionTimeout = $xml.find('sessionTimeout');
+        	$enableCacheAndAutocomplete = $xml.find('enableCacheAndAutocomplete');
+        	
+        	if($complexity.text() == 'NoRestriction' || $complexity.text() == 'AlphaNumeric')
+        	{
+       		 its = {}
+                its['exploit'] = 'The current password complexity is set to ' + $complexity.text();
+                its['variable'] = 'NA';
+                its['url'] = btoa('The current password complexity is set to ' + $complexity.text());
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '4';
+                its['code'] = 'NA';
+                its['severity'] = 'Medium';
+                
+                vulnerabilities.push(its);
+                vulncount++;
+        	}
+        	
+        	if($expiration.text() == 'OneYear' || $expiration.text() == 'SixMonths' || $expiration.text() == 'NinetyDays')
+        	{
+        		its = {}
+                its['exploit'] = 'The current password expiration policy is set to ' + $expiration.text();
+                its['variable'] = 'NA';
+                its['url'] = btoa('The current password expiration policy is set to ' + $expiration.text());
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '6';
+                its['code'] = 'NA';
+                its['severity'] = 'Medium';
+                vulnerabilities.push(its);
+                vulncount++;
+        	}
+        	
+        	if(parseInt($historyRestriction.text()) < 3)
+        	{
+        		its = {}
+                its['exploit'] = 'The current password history settings are set to remember the last ' + $historyRestriction.text() + ' password(s).';
+                its['variable'] = 'NA';
+                its['url'] = btoa('The current password history settings are set to remember the last ' + $historyRestriction.text() + ' password(s).');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '7';
+                its['code'] = 'NA';
+                its['severity'] = 'Medium';
+                vulnerabilities.push(its);
+                vulncount++;
+        	}
+        	
+        	if($lockoutInterval.text() == '')
+        	{
+        		its = {}
+                its['exploit'] = 'The current setting does not lockout a user out due to numerous failed login attempts.';
+                its['variable'] = 'NA';
+                its['url'] = btoa('The current setting does not lockout a user out due to numerous failed login attempts.');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '8';
+                its['code'] = 'NA';
+                its['severity'] = 'Low';
+                vulnerabilities.push(its);
+                vulncount++;
+        	}
+        	
+        	if($maxLoginAttempts.text() == 'NoLimit')
+        	{
+        		its = {}
+                its['exploit'] = 'The current setting does not lock a user after repeated failed login attempts.';
+                its['variable'] = 'NA';
+                its['url'] = btoa('The current setting does not lock a user after repeated failed login attempts.');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '9';
+                its['code'] = 'NA';
+                its['severity'] = 'High';
+                
+                vulnerabilities.push(its);
+                vulncount++;
+        	}
+        	
+        	if($minPasswordLength.text() == 'FiveCharacters' || $minPasswordLength.text() == 'EightCharacters')
+        	{
+        		its = {}
+                its['exploit'] = 'The current setting only requires a password of ' +$minPasswordLength.text()+' characters.';
+                its['variable'] = 'NA';
+                its['url'] = btoa('The current setting only requires a password of ' +$minPasswordLength.text()+' characters.');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '10';
+                its['code'] = 'NA';
+                its['severity'] = 'High';
+                vulnerabilities.push(its);
+                vulncount++;
+        	}
+        	
+        	if($questionRestriction.text() == 'None' )
+        	{
+        		its = {}
+                its['exploit'] = 'The current setting allows to save password as the secret question.';
+                its['variable'] = 'NA';
+                its['url'] = btoa('The current setting allows to save password as the secret question.');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '11';
+                its['code'] = 'NA';
+                its['severity'] = 'High';
+                vulnerabilities.push(its);
+                vulncount++;
+        	}
+        	
+        	if($enableCSRFOnGet.text() == 'false' || $enableCSRFOnGet.text() == '' )
+        	{
+        		its = {}
+                its['exploit'] = 'Cross-Site Request Forgery (CSRF) protection on GET requests on non-setup pages is not enabled.';
+                its['variable'] = 'NA';
+                its['url'] = btoa('Cross-Site Request Forgery (CSRF) protection on GET requests on non-setup pages is not enabled.');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '12';
+                its['code'] = 'NA';
+                its['severity'] = 'Low';
+                vulnerabilities.push(its);
+                vulncount++;
+        	}
+        	
+        	if($enableCSRFOnPost.text() == 'false' || $enableCSRFOnPost.text() == '' )
+        	{
+        		its = {}
+                its['exploit'] = 'Cross-Site Request Forgery (CSRF) protection on POST requests on non-setup pages is not enabled.';
+                its['variable'] = 'NA';
+                its['url'] = btoa('Cross-Site Request Forgery (CSRF) protection on POST requests on non-setup pages is not enabled.');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '13';
+                its['code'] = 'NA';
+                its['severity'] = 'Medium';
+                vulnerabilities.push(its);
+                vulncount++;
+        	}
+        	
+        	if($enableClickjackNonsetupSFDC.text() == 'false' || $enableClickjackNonsetupSFDC.text() == '' )
+        	{
+        		its = {}
+                its['exploit'] = 'Clickjack protection for non-setup Salesforce pages is not enabled.';
+                its['variable'] = 'NA';
+                its['url'] = btoa('Clickjack protection for non-setup Salesforce pages is not enabled.');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '14';
+                its['code'] = 'NA';
+                its['severity'] = 'Low';
+                vulnerabilities.push(its);
+                vulncount++;
+        	}
+        	
+        	if($enableClickjackNonsetupUser.text() == 'false' || $enableClickjackNonsetupUser.text() == '' )
+        	{
+        		its = {}
+                its['exploit'] = 'Clickjack protection for non-setup customer pages is not enabled.';
+                its['variable'] = 'NA';
+                its['url'] = btoa('Clickjack protection for non-setup Salesforce pages is not enabled.');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '15';
+                its['code'] = 'NA';
+                its['severity'] = 'Low';
+                vulnerabilities.push(its);
+                vulncount++;
+        	}
+        	
+        	if($enableClickjackSetup.text() == 'false' || $enableClickjackSetup.text() == '' )
+        	{
+        		its = {}
+                its['exploit'] = 'Clickjack protection for setup pages is not enabled.';
+                its['variable'] = 'NA';
+                its['url'] = btoa('Clickjack protection for setup pages is not enabled.');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '16';
+                its['code'] = 'NA';
+                its['severity'] = 'Medium';
+                vulnerabilities.push(its);
+                vulncount++;
+        	}
+        	
+        	if($sessionTimeout.text() == 'FourHours' || $sessionTimeout.text() == 'TwelveHours' || $sessionTimeout.text() == 'EightHours' ||$sessionTimeout.text() == '' )
+        	{
+        		its = {}
+                its['exploit'] = 'Session timeout is set too high at '+ $sessionTimeout.text() +'.';
+                its['variable'] = 'NA';
+                its['url'] = btoa('Session timeout is set too high at '+ $sessionTimeout.text() +'.');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '17';
+                its['code'] = 'NA';
+                its['severity'] = 'Medium';
+                vulnerabilities.push(its);
+                vulncount++;
+        	}
+        	
+        	if($enableCacheAndAutocomplete.text == 'true')
+        	{
+        	its = {}
+                its['exploit'] = 'Auto complete and cache for login page is enabled.';
+                its['variable'] = 'NA';
+                its['url'] = btoa('Auto complete and cache for login page is enabled.');
+                its['file'] = 'NA';
+                its['line'] = 'NA';
+                its['typed'] = '17';
+                its['code'] = 'NA';
+                its['severity'] = 'Medium';
+                vulnerabilities.push(its);
+                vulncount++;
+        	}
+          
+        }
+        
+        function parseapexclass(codelines, fileid, zipfilename, visualForceURL)
+        {
+        //var vulnerabilities = $.parseJSON(sessionStorage.getItem('vulnerabilities'));
+		//var vulncount = parseInt(sessionStorage.getItem('vulncount'));
+                	
+        try
+        {
+        var lastcodeline=0;
+            updateMessages('+ Analyzing ' + zipfilename + ' ...');
+            console.log('parseapexclass called with: ' + zipfilename);
+            /*==============================================================
+            Begin Create CodeBlocks Section
+            ================================================================*/
+        itm = {}
+        itm["file"] = zipfilename;
+        itm["intfuncs"] = [];
+        foundfuncs.push(itm);
+                    
+                    var iscommentblock = 0;
+                    var codeline = codelines.split('\n');
+                    for(var i = 0;i < codeline.length;i++)
+                    {
+                    console.log('Analyzing line ' + codeline[i].trim());
+                    if(codeline[i].trim().match("^[////]")){}
+                    else if (codeline[i].trim().match("^[///*]") && codeline[i].trim().match("[/*//]$")){}
+                    else if (codeline[i].trim().match("^[///*]"))
+                    {
+                        
+                        iscommentblock = 1;
+                        
+                    }
+                    else if (iscommentblock && codeline[i].trim().match("[/*//]$"))
+                    {
+                        
+                        iscommentblock = 0;
+                        
+                    }
+                    else if (!iscommentblock)
+                    {
+   					if(codeline[i].trim().replace('\t','').replace('\r','') != "" && codeline[i].trim() != "{"){lastcodeline=i+1;}
+                    if(codeline[i].trim()!=""){
+                    if(codeline[i].trim().match("[////]")){var tests = codeline[i].split("\/\/"); if(tests.length > 1){codeline[i] = tests[0]; /*console.log('splited: ' + tests[0] + 'line number: ' + i);*/}}        
+
+                    if(codeline[i].match(startlineregex))
+                    {
+                    item = {}
+                
+                    item ["file"] = zipfilename;
+                    
+                    if(codeline[i].trim() == "{")
+                    {
+                    item ["startline"] = lastcodeline;
+                    }else
+                    {
+                    item ["startline"] = i+1;
+                    }
+                    item ["endline"] = "";
+                    
+                codeblocks.push(item);  
+            }
+            if (codeline[i].match(endlineregex))
+            {
+                var highest = 0;
+                $.each(codeblocks, function(ix, objt) {
+        
+                if(objt.startline > highest && objt.endline == "")
+                {
+                    highest = objt.startline;
+                }   
+                });
+
+                $.each(codeblocks, function(ix, objt) {
+                    
+                if(objt.startline == highest )
+                {
+                    objt.endline = i+1;
+                }
+                                
+                });
+        
+        
+        
+            }
+
+/*==============================================================
+End Ceate CodeBlocks Section
+================================================================*/
+
+
+/*=================================================================
+Begin DML function list creation Section
+===================================================================*/
+
+            //alert(JSON.stringify(foundfuncs));
+            $.each(interestingfuncs,function(ix, objt){
+                if(codeline[i].match(objt.func))
+                {
+                    itx = {}
+                    itx["line"] = i+1;
+                    itx["id"] = objt.id;
+                    itx["mitigated"] = 0;
+                    itx["code"] = codeline[i].trim();
+                    itx["verified"] = 0;
+                $.each(foundfuncs, function(ij, o){
+                    if(o.file == zipfilename)
+                    {
+                        //o.["intfuncs"] = itx;
+                        o["intfuncs"].push(itx);
+                    }   
+                });
+                
+                        
+                }
+            });
+/*=================================================================
+End DML function list creation Section
+===================================================================*/
+
+
+/*=================================================================
+Begin SOQL Injection analysis Section
+===================================================================*/
+        
+        var SOLQInjectionstring = codeline[i].toLowerCase();
+        console.log('2. Analyzing line ' + codeline[i].trim());
+        var soqlptrn =  new RegExp(SOQLInjection);
+        if (soqlptrn.test(SOLQInjectionstring))
+        //if (SOLQInjectionstring.match(SOQLInjection))        
+        {
+        
+        its = {}
+                its['exploit'] = 'SOQL Injection found @ ' + zipfilename + ' at line ' + (i+1);
+                its['variable'] = 'NA';
+                its['url'] = 'NA';
+                its['file'] = zipfilename;
+                its['line'] = i+1;
+                its['typed'] = '1';
+                its['code'] = btoa(codeline[i]);
+                //its['code'] = codeline[i].trim().replace('\t', '').replace(/\\/gi, '');
+                its['severity'] = 'High';
+                vulnerabilities.push(its);
+                vulncount++;
+                	
+                console.log('SOQL Injection found & Matched');
+            
+        }       
+        
+/*=================================================================
+End SOQL Injection analysis Section
+===================================================================*/
+
+
+/*=================================================================
+Begin Obtain User Input variables
+===================================================================*/
+		console.log('3. Analyzing line ' + codeline[i].trim());
+        $.each(requestApexobjects, function(ix, objt) {
+        if(codeline[i].match(objt.regularex))
+        {
+            console.log ("Request Variable found: " + codeline[i] + " @ line number: " );
+            var strx = codeline[i].indexOf(objt.rawobject);
+            strx = strx + objt.rawobject.length;
+            var nd = codeline[i].slice(strx);
+            var znd = nd.indexOf(')');
+            var collss = nd.split('\'');
+            console.log('Found User Input variable: ' + collss[1]);
+            console.log(JSON.stringify(MetaDataFilenames));
+            $.each(MetaDataFilenames, function(irm, oirm){
+            console.log(JSON.stringify(oirm.apexControllers));
+            $.each(oirm.apexControllers, function(im, oim){
+            console.log(oim.controller);
+            if (oim.controller == fileid)
+            {
+                item = {}
+                item ["url"] = fBaseURL +'apex/'+oirm.id;//'https://' + oirm.nmprefix +''+ vfBaseURL +'apex/'+oirm.id;
+                item ["variabletotest"] = collss[1];
+                item ["method"] = "GET";
+                item ["linenumber"] = i+1;
+                item ["vfpage"] = zipfilename;
+                item ["id"] = fileid;
+        
+            fuzzedinputs.push(item);
+            console.log(JSON.stringify(fuzzedinputs));
+            }
+            
+            });
+        });
+
+        }
+        });
+
+/*=================================================================
+End Obtain User Input variables
+===================================================================*/
+
+
+
+
+
+
+
+            
+
+
+
+
+        console.log(JSON.stringify(foundfuncs));
+
+
+/*=================================================================
+Start Analysis of DML codeblocks 
+===================================================================*/
+			console.log('testing DML');
+			//console.log(foundfuncs.intfuncs.length);
+            
+            $.each(foundfuncs, function(isx, objct){
+            console.log(zipfilename);
+            console.log(objct.file);
+            if(objct.file == zipfilename)
+            {
+            $.each(objct.intfuncs, function(ix, objt){
+            console.log(objct.intfuncs);
+            $.each(DMLfuncs, function(ik,o){
+            if(objt.verified == 0)
+            {
+            if(objt.id == o.DMLfunc)
+            {
+                
+                $.each(objct.intfuncs, function(x,b){
+                $.each(DMLfuncs, function(r, rx){
+                $.each(rx.protectfuncs, function(j,k){
+
+                
+                  if(k.pfunc == b.id)
+                  {
+                    console.log(k.pfunc + ' Found Protection:' + b.id);
+                    var lowest;
+                    var firstiteration = "0";
+                    var foundstartline;
+                    var foundendline;
+                    $.each(codeblocks, function(l,t){
+                        
+                        if(t.file == objct.file)
+                        {
+                            var difference;
+                            if(firstiteration == "0")
+                            {
+                            difference = objt.line - t.startline;
+                            firstiteration = "1";
+                            lowest = difference;
+                            }
+                            difference = objt.line - t.startline;
+                            console.log('differnce: ' + difference);
+                            if(lowest >= difference && difference > 0)
+                            {
+                                foundstartline = t.startline;
+                                foundendline = t.endline;
+                                lowest = difference;
+                            }
+                        }
+                    });
+                
+                    console.log('codeblock found: startline: ' + foundstartline + ' endline: ' + foundendline + ' the line in question: ' + b.code);
+
+                    if(b.line >= foundstartline && b.line <= foundendline)
+                    {
+                        objt.mitigated = 1;
+                        objt.verified = 1;
+                        console.log('found mitigated DML issue');
+                        return;
+                    }
+                }   
+                });
+                });
+                });
+            }
+            }    
+            });
+            });
+            }           
+            });
+            
+			console.log ('out of this');
+            /*$.each(foundfuncs, function(im, obj){
+            if(obj.file == zipfilename)
+            {
+            
+            $.each(obj.intfuncs, function(ix, objt){
+            $.each(DMLfuncs, function(k,o){
+            
+            console.log ('check if mitigation found: ' + objt.code + 'mitigated value: ' + o.DMLfunc);
+            if(objt.id == o.DMLfunc && objt.mitigated == 0)
+            {
+                
+                its = {}
+                its['exploit'] = 'NA';
+                its['variable'] = 'NA';
+                its['url'] = 'NA';
+                its['file'] = obj.file;
+                its['line'] = objt.line;
+                its['typed'] = '2';
+                its['code'] = objt.code;
+                vulnerabilities.push(its);
+                
+                return false;
+                
+                /*========================================================
+                    Todo to add to the vulnerabilities JSON.........
+                    ========================================================
+            }
+            });
+            });
+
+            }
+            });*/
+            }
+                    }
+                    
+                    }
+                    console.log ('ended file analysis');
+                    
+            $.each(foundfuncs, function(im, obj){
+            if(obj.file == zipfilename)
+            {
+            
+            $.each(obj.intfuncs, function(ix, objt){
+            console.log(objt.id);
+            $.each(DMLfuncs, function(k,o){
+            
+            //console.log ('check if mitigation found: ' + objt.code + 'mitigated value: ' + o.DMLfunc);
+            if(objt.id == o.DMLfunc && objt.mitigated == 0)
+            {
+                
+                its = {}
+                its['exploit'] = 'Authorization bypass issue found @ ' +obj.file+ ' on line '+objt.line;
+                its['variable'] = 'NA';
+                its['url'] = 'NA';
+                its['file'] = obj.file;
+                its['line'] = objt.line.toString();
+                its['typed'] = '2';
+                its['code'] = btoa(objt.code);
+                its['severity'] = 'High';
+                vulnerabilities.push(its);
+                vulncount++;
+                return false;
+                
+                /*========================================================
+                    Todo to add to the vulnerabilities JSON.........
+                    ========================================================*/
+            }
+            });
+            });
+
+            }
+            });
+/*=================================================================
+End Analysis of DML codeblocks 
+===================================================================*/
+
+        console.log(JSON.stringify(codeblocks));
+        console.log(JSON.stringify(foundfuncs));  
+        console.log(JSON.stringify(vulnerabilities));
+        console.log(JSON.stringify(fuzzedinputs));
+        
+        }
+        catch(err) {
+    console.log(err.message);
+    
+}
+            
+        }
+
+        function parseapexpage(codelines, fileid, visualforcePage, visualforceURL )
+        {
+
+        var codeline = codelines.split('\n');
+        updateMessages('+ Analyzing ' + visualforcePage + ' ...');
+        //console.log('parseapexpage called with:' + visualforcePage);
+        for(var i = 0;i < codeline.length;i++)
+        {
+        if(codeline[i].match(escapeXSS))
+        {
+        console.log ('..!.,');
+         its = {}
+                    its['exploit'] = 'Potential XSS due to disabled escaping @ ' + visualforcePage + ' line ' + i;
+                    its['variable'] = 'NA';
+                    its['url'] = 'NA';
+                    its['file'] = visualforcePage;
+                    its['line'] = i;
+                    its['typed'] = '3';
+					its['code'] = btoa(codeline[i]);	
+//                  its['code'] = codeline[i].replace(/\"/gi, '');
+                    its['severity'] = 'Medium';
+                    vulnerabilities.push(its);
+                    vulncount++;
+        }
+        if(foundControllers == 0){
+        
+        $.each(apexControllerobjs, function(ix, objt) {
+        if(codeline[i].match(objt.regularex))
+        {
+        
+        //alert(visualforcePage);
+        //alert(objt.rawobject);
+        foundControllers = 1;
+        
+        var strx = codeline[i].indexOf(objt.rawobject);
+        strx = strx + objt.rawobject.length;
+        
+        var nd = codeline[i].slice(strx);
+        var znd = nd.indexOf(' ');
+        //alert(nd);
+        var collss = nd.split('"');
+        //alert(collss[0]);
+        
+
+        its = {}
+        its['controller'] = collss[0];
+        
+        $.each(MetaDataFilenames, function(inx, o)
+        {
+        if(o.file == visualforcePage){      
+        o['apexControllers'].push(its);
+        }
+        });
+        var extcnt = "extensions\=";
+        var extracnts = codeline[i].indexOf(extcnt);
+        if(extracnts > 0){
+        strx = extracnts + extcnt.length;
+        var extControllers = codeline[i].slice(strx);
+
+        var extControlls = extControllers.split('"');
+        console.log('Extensions:' + extControlls);
+        var ecls = extControlls[1].split(',');
+        $.each(ecls, function(index, obj){
+        console.log('Extensions1: ' + obj );
+        $.each(MetaDataFilenames, function(inx, o)
+        {
+        if(o.file == visualforcePage){
+        itss = {}
+        itss['controller'] = obj;
+        
+        o['apexControllers'].push(itss);
+        }
+        });
+
+        });
+        }
+
+        }
+        });
+        }
+        
+        
+        
+        $.each(requestobjects, function(ix, objt) {
+        if(codeline[i].match(objt.regularex))
+        {
+        //alert("Request Variable found: " + codeline[i] + " @ line number: " + i+1);
+        var start = codeline[i].indexOf(objt.rawobject);
+        start = start + objt.rawobject.length;
+        var end = codeline[i].slice(start);
+        var zend = end.indexOf("}");
+        var dots = end.slice(0,zend);
+        
+        
+        item = {}
+                item ["url"] = visualforceURL;
+                item ["variabletotest"] = dots.trim();
+                item ["method"] = objt.method;
+                item ["linenumber"] = i+1;
+                item ["vfpage"] = visualforcePage;
+                item ["id"] = fileid;
+        
+        fuzzedinputs.push(item);
+        jsonString = JSON.stringify(fuzzedinputs);
+        //alert(jsonString);
+        
+        }
+        //return;
+        });
+        }
+        }
+        
+        function SOQLInjectiontests()
+        {
+        
+        updateMessages('+ Starting SOQL Injection tests ...');
+        $.each(fuzzedinputs, function(i, obj) {
+         if(abort())
+            {
+            updateMessages('+ Scan aborted ... ');
+            return;
+            }
+        $.each(soqlfuzzer, function(index, item) {
+         if(abort())
+            {
+            updateMessages('+ Scan aborted ... ');
+            return;
+            }
+        
+        
+        var functionalURL = obj.url+"?"+obj.variabletotest+"="+item.payload;
+        its = {}
+			its['functionalURL'] = functionalURL;
+            its['fuzzed'] = 'no';
+            its['variable'] = obj.variabletotest;
+            soqlfunctionURLs.push(its);
+        
+        
+        });
+        });
+        sessionStorage.setItem('soqlfunctionURLs', JSON.stringify (soqlfunctionURLs));
+        }
+        
+        function XSSPersistenttests()
+        {
+        updateMessages('+ Starting Persistent & Stored XSS tests ... ');
+        currentPersistentXSSURL = '';
+               
+        $.each(MetaDataFilenames, function(i,obj)
+        {
+         if(abort())
+            {
+            updateMessages('+ Scan aborted ... ');
+            return;
+            }
+            $.each(obj.apexControllers, function(x,xbj)
+            {
+             if(abort())
+            {
+            updateMessages('+ Scan aborted ... ');
+            return;
+            }
+            $.each(fuzzedObjects, function(j,jbj)
+            {
+             if(abort())
+            {
+            updateMessages('+ Scan aborted ... ');
+            return;
+            }
+                if(xbj.controller == jbj.name)
+                {
+                var functionalURL = fBaseURL +'apex/'+obj.id;//'https://' + obj.nmprefix +''+ vfBaseURL +'apex/'+obj.id+'?id='+jbj.id;
+                console.log(functionalURL);
+                currentPersistentXSSURL = functionalURL;
+                uniqueid++;
+                var response;
+                 its ={}
+                its['functionalURL'] = functionalURL;
+                its['fuzzed'] = 'no';
+                persistentxssfunctionalURLs.push(its);
+              
+                }
+            });
+            
+            });
+        });
+        sessionStorage.setItem('persistentxssfunctionalURLs', JSON.stringify (persistentxssfunctionalURLs));
+        currentPersistentXSSURL = '';
+        }
+        
+        function XSStests()
+        {
+       	
+        updateMessages('+ Start Reflective XSS tests ...');
+        $.each(fuzzedinputs, function(i, obj) {
+         
+        if(abort())
+            {
+            updateMessages('+ Scan aborted ... ');
+            return;
+            }
+        $.each(fuzzer, function(index, item) {
+        if(abort())
+            {
+            updateMessages('+ Scan aborted ... ');
+            return;
+            }
+        uniqueid++;
+        var functionalURL = obj.url+"?"+obj.variabletotest+"="+item.exploitstart + uniqueid + item.exploitend;
+        //alert(functionalURL);
+        
+        temps = {}
+            temps["url"] = obj.url;
+            temps["id"] = uniqueid;
+            temps["variable"] = obj.variabletotest;
+            temps["exploit"] = item.exploitstart + uniqueid + item.exploitend;
+            temps["exploiturl"] = functionalURL;
+            temps["method"] = obj.method;
+            temps["linenumber"] = obj.linenumber;
+            temps["vfpage"] = obj.vfpage;
+            activeexploitrequests.push(temps);
+            
+            
+            its = {}
+            its['functionalURL'] = functionalURL;
+            its['fuzzed'] = 'no';
+            its["url"] = obj.url;
+            its["id"] = uniqueid;
+            its["variable"] = obj.variabletotest;
+            its["exploit"] = item.exploitstart + uniqueid + item.exploitend;
+            its["exploiturl"] = functionalURL;           
+            xssfunctionalURLs.push(its);
+            
+            });
+        });
+            
+            sessionStorage.setItem('xssfunctionalURLs', JSON.stringify(xssfunctionalURLs)); 
+        }
+        
+        
+  
+       
+           
+        </script>
+        
+            
+<div id="success"></div>
+
+
+
+<div style="font-family:Segoe UI; border-bottom:2px solid; border-color:#3A608D; background-color:#f0f0f6; width:760px;">   
+     <div style="font-size:24px; color:#837F7F;">Saved Scans</div>
+     </div>  
+      
+        <div style="font-family:Segoe UI;">    
+        <apex:repeat var="cases" value="{!casos}">
+        <div id="{!JSENCODE(cases.cId)}" style="display:block;width:760px;float:left;">
+        
+		<div style="float:left; margin:5px;  padding:4px 8px 4px 8px; background-color:#f0f0f6; border-bottom:1px solid; border-color:#837F7F;">		
+        <div style="font-size:18px; border-bottom:solid 1px #c0c0c0;"><a href="{!JSENCODE(cases.Id)}" style="color:#3A608D; text-decoration: none; outline: none;" onmouseover="this.style.color='#0D5DDF';" onmouseout="this.style.color='#3A608D';"><apex:outputText id="Subject" value="{!cases.Subject}"></apex:outputText></a>
+        <div style="float:right;"><a style="color:#707070; text-decoration:none; outline:none; font-size:14px; font-weight:bolder;" onmouseover="this.style.color='#000000';" onmouseout="this.style.color='#707070';" href="#" title="delete this record" onclick="javascript:/*digitsec.*/MetadataRetrieveController.deleteScan('{!JSENCODE(cases.cId)}',handledeleteResult)">x</a></div></div>
+        
+            <div style="color:#d43f3a;  font-weight:bold; font-size:22px; padding-left:15px; padding-top:5px; float:left; width:165px; height:45px;"><apex:outputText id="desc" value="{!cases.highcount} High"></apex:outputText></div>
+            <div style="color:#fdc431;  font-weight:bold; font-size:22px; padding-left:15px; padding-top:5px; float:left; width:165px; height:45px;"><apex:outputText id="desc1" value="{!cases.mediumcount} Medium "></apex:outputText></div>
+            <div style="color:#357abd;  font-weight:bold; font-size:22px; padding-left:15px; padding-top:5px; float:left; width:165px; height:45px;"><apex:outputText id="desc2" value="{!cases.lowcount} Low "></apex:outputText></div>
+            <div style="color:#aaa0a0;  font-weight:bold; font-size:22px;  padding-left:15px; padding-top:5px; float:left; width:165px; height:45px;"><apex:outputText id="desc3" value="{!cases.activecount} Active"></apex:outputText></div>
+            <div style="float:right; border-top:solid 1px #aaa0a0;"><a style="color:#3A608D; text-decoration:none; outline:none; font-size:14px;" onmouseover="this.style.color='#0D5DDF';" onmouseout="this.style.color='#3A608D';" href="{!JSENCODE(cases.Id)}">&gt; view details</a></div>
+            </div>
+		</div>
+        
+
+        </apex:repeat> 
+    </div>
+    <div id="mydiv"></div>
+    
+    <script>
+    updateMessages('+ Scan engine initializing ...');
+	updateMessages('+ Scanner ready ...');
+    </script>
+    </apex:form>
+</apex:page>

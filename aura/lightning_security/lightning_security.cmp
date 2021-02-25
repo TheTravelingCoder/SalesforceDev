@@ -1,0 +1,11 @@
+<aura:component controller="MyContactListController">
+    <aura:handler name="init" action="{!c.myAction}" value="{!this}" />
+    <aura:attribute name="contacts" type="Contact[]" />
+    
+    <ul>
+<aura:iteration items="{!v.contacts}" var="contact">
+<li class="minli"> <aura:unescapedHtml value="{!contact.Name}"/> </li>
+</aura:iteration>
+</ul> 
+   
+</aura:component>

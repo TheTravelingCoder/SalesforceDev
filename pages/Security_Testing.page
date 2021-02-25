@@ -1,0 +1,55 @@
+<apex:page controller="SecurityTesting">
+<h1> Hacking Testing {!$Request.head1} {!$CurrentPage.parameters.head2} </h1>
+<h1> <!-- Hacking Testing {!$Request.foo.bar} {!$CurrentPage.parameters.xsddsid} --></h1>
+<script language='javascript'>
+/*var foo='{!$request.foo.bar}';
+var sss ='{!$currentPage.parameters.xsddsid}';*/
+
+function handleasyncResult(result, event) 
+         {
+        
+         
+         if (event.status)
+         {console.log(result);
+         }
+         }
+         
+</script>
+<apex:form >
+  Helped {!foor}
+    {!testing}
+    
+    <iframe src="{!$currentPage.parameters.xsddsid}"></iframe>
+
+ 
+<iframe src="{!$request.foo}" ></iframe>
+
+<iframe src="/{!$currentPage.parameters.xsddsid}" ></iframe>
+
+ 
+<iframe src="/{!$request.foo}" ></iframe>
+
+
+({{!$CurrentPage.URL}});
+<apex:outputText id="testigis" escape="false"></apex:outputText>
+
+            <apex:pageblock >
+                
+                  Input Here <apex:inputText value="{!myinput}" id="myinput"/>
+                 <apex:commandButton value="Submit" action="{!MyMethode}" rerender="mymethod, mymethoda"/>
+            </apex:pageblock>
+            <apex:pageblock >
+                 <apex:outputText id="mymethod" value="{!myoutput}" escape="false"/>
+				<apex:outputLink id="mymethoda" value="{!myhrefoutput}">Testing</apex:outputLink>
+            </apex:pageblock>
+            <input id="foobar" name="foobar" type="text"/>
+    		<input id="test" name="test"></input>
+	
+    </apex:form>
+    <b>Output here = </b>{!myoutput}
+    
+    <script>
+    //$("#test").html({!myoutput});
+    document.getElementById("test").innerhtml = '{!jsencode(myoutput)}';
+    </script>
+</apex:page>

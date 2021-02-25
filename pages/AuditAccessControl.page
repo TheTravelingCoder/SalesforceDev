@@ -1,0 +1,783 @@
+<apex:page controller="AuditAccessControl" action="{!init}" sidebar="false">
+
+<apex:stylesheet value="{!$Resource.s4stylesheet}"/>
+<apex:includeScript value="{!$Resource.s4jquerymin}"/>
+<apex:includeScript value="{!$Resource.s4Selectize}"/>
+<apex:stylesheet value="{!$Resource.s4selectizedefault}"/>
+<apex:stylesheet value="{!$Resource.s4fontawesome}"/>
+<apex:includeScript value="{!$Resource.s4jsgridminjs}"/>
+<apex:includeScript value="{!$Resource.s4chart}"/>
+
+
+<script>
+var fontawesomeeot = '{!JSENCODE($Resource.s4fontawesomeeot)}';
+var fontawesomewoff2 = '{!JSENCODE($Resource.s4fontawesomewoff2)}';
+var fontawesomewoff = '{!JSENCODE($Resource.s4fontawesomewoff)}';
+var fontawesomettf = '{!JSENCODE($Resource.s4fontawesomettf)}';
+var fontawesomesvg = '{!JSENCODE($Resource.s4fontawesomesvg)}';
+var xlimit = 50000; //Remoting Max 
+var xoffset = 0;
+var count = 0;
+
+var PermissionsViewEncryptedData = 'PermissionsViewEncryptedData'; 
+var PermissionsViewAllUsers = 'PermissionsViewAllUsers';
+var PermissionsViewAllData = 'PermissionsViewAllData';
+var PermissionsManageUsers = 'PermissionsManageUsers';
+var PermissionsManageUnlistedGroups = 'PermissionsManageUnlistedGroups';
+var PermissionsCreate = 'PermissionsCreate';
+var PermissionsRead = 'PermissionsRead';
+var	PermissionsEdit ='PermissionsEdit';
+var PermissionsDelete ='PermissionsDelete';
+var PermissionsViewAllRecords ='PermissionsViewAllRecords';
+var PermissionsModifyAllRecords = 'PermissionsModifyAllRecords';
+
+var tempobjectinfo =[];
+var total_access = [];
+var objectinfo = [];
+var fieldinfo = [];
+
+</script> 
+
+
+<apex:form >
+ 
+<div id="maindiv" style="width:100%; height:auto;">
+      <div style="width:100%; height:auto;">  
+     <div style="font-family:Helvetica; border-bottom:3px solid; border-color: rgb(0,161,224); height:64px; width:100%; background-color:#fffff; float:left;">   
+     <div style="font-size:26px; color:#837F7F;"><a href="/apex/SecurityScan" style="color:#3A608D; text-decoration:none; outline:none;" onmouseover="this.style.color='#0D5DDF';" onmouseout="this.style.color='#3A608D';"><img style="width:50px;height:50px; float:left; padding:10px;" src="{!$Resource.S3_square_300dpi}" /><div style="padding-top:15px; float:left; color:#000;"> S4 </div></a><div style="padding:15px; float:left; color:rgb(0,161,224);">  &gt; </div> <div style="padding-top:15px; float:left; color:#000;">Audit Access Control </div>
+     </div>
+            
+  
+        <div id="analytics" style="float:left; width:100%;">   
+        <div style="font-family:Helvetica; width:100%;" > 
+         
+         <div id="users" class="tile" style="margin-left:6%;">{!NumberofUsers} <br /> <span class="tilespan">Users</span> </div>
+          <div id="profiles" class="tile">{!NumberofRoles} <br /><span class="tilespan">Profiles</span></div>
+          <div id="objects" class="tile">{!NumberofProfiles} <br /><span class="tilespan">Roles</span></div>
+          <div id="permission" class="tile">{!NumberofPermissionSets} <br /><span class="tilespan">Permission Sets</span></div>
+                         <div>
+                         
+                </div>
+               
+
+
+
+
+
+
+
+<div id="canvas-holder" style="width:33%; float:left; height:400px;">
+        <canvas id="prf" width="1012" height="1012" style="display: block; height: 316px; width: 316px;">
+    </canvas></div>
+
+    
+    <div id="canvas-holder" style="width:33%; float:left; height:400px;">
+        <canvas id="dups" width="1012" height="1012" style="display: block; height: 316px; width: 316px;">
+    </canvas></div>
+
+    
+    <div id="canvas-holder" style="width:33%; float:left; height:400px;">
+        <canvas id="logingeos" width="1012" height="1012" style="display: block; height: 316px; width: 316px;">
+    </canvas></div>
+
+       </div>
+       
+       
+       </div>
+
+   </div>
+   </div>
+   </div>
+
+<div id="wrapper">
+
+			<h1>Access Audit By Users</h1>
+			<div class="demo">
+				<div class="control-group">
+					<label for="select-users">Select Users</label>
+					<select id="select-users" name="users[]" multiple="true" class="demo-default" placeholder="Select Users ...">
+						<option value="1">All Users</option>
+						</select>
+				</div>
+
+			</div>
+			
+			<div class="demo">
+				<div class="control-group">
+					<label for="select-objects">Select Objects</label>
+					<select id="select-objects" name="objects[]" multiple="true" class="demo-default"  placeholder="Select Objects ...">
+						<option value="1">All Objects</option>
+
+					</select>
+				</div>
+
+			</div>
+			
+			<div class="demo">
+				<div class="control-group">
+					<label for="select-accesstype">Select Access Type (CRED or FLS)</label>
+					<select id="select-accesstype" name="access[]" multiple="true" class="demo-default" placeholder="Select Access Type ...">
+					</select>
+				</div>
+
+			</div>
+						<div><input class="button" type="button" onclick="callback()" value="View Current Access" />
+						<i class="fa fa-arrow-circle-down downloadbutton" aria-hidden="true" id='btnExport3' style='display:none; font-size: 18px;'>
+						<div style="float:right; padding-left:2px;"> Download</div>
+						</i>
+						</div>
+						
+			</div>
+			<br />
+			<br />
+
+
+<div id="jsGrid"></div>
+
+
+<script>
+var usersresult;
+
+{!JSENCODE(dotPrefix)}AuditAccessControl.getDuplicateUsers(handleduplicateUsersResult);
+
+
+{!JSENCODE(dotPrefix)}AuditAccessControl.getObjects(handleObjectsResult);
+generateAccessTypes();
+
+{!JSENCODE(dotPrefix)}AuditAccessControl.getUsers(xoffset, xlimit, handleUsersResult);
+
+{!JSENCODE(dotPrefix)}AuditAccessControl.getUserLoginGeos(handleLoginGeosResult);
+
+var username = '';
+
+function callback()
+{
+total_access = [];
+var users = [];
+var objects =[];
+var accesstypes = '1';
+
+if($('#select-objects').selectize()[0].selectize.getValue().includes("All Objects"))
+ {
+	 $.each($('#select-objects').selectize()[0].selectize.options, function(ix,it)
+	 {
+	 if(it.SobjectType !='All Objects'){
+	 objects.push(it.SobjectType);
+	 }
+	 });
+  }
+ else
+ {
+ 	objects = $('#select-objects').selectize()[0].selectize.getValue();
+ }
+ if($('#select-accesstype').selectize()[0].selectize.getValue().includes("1") || ($('#select-accesstype').selectize()[0].selectize.getValue().includes("2") && $('#select-accesstype').selectize()[0].selectize.getValue().includes("3")))
+ {
+ accesstypes = 1;
+ }else if ($('#select-accesstype').selectize()[0].selectize.getValue().includes("2")){
+ accesstypes = 2; //CRUD Only
+ }else if ($('#select-accesstype').selectize()[0].selectize.getValue().includes("3"))
+ {
+ accesstypes = 3; //CRUD + FLS
+ }
+
+	
+if($('#select-users').selectize()[0].selectize.getValue().includes("1"))
+ {
+  $.each($('#select-users').selectize()[0].selectize.options, function(ix,it)
+	 {
+	 if(it.Id !='1'){
+	 	count++;
+	 }
+	 
+	 })
+ 	 $.each($('#select-users').selectize()[0].selectize.options, function(ix,it)
+	 {
+	 if(it.Id !='1'){
+		 username = it.Id;
+		 users = [];
+		 users.push(it.Id);
+		 {!JSENCODE(dotPrefix)}AuditAccessControl.getObjectPerms(users, objects, accesstypes, handleAuditByUsers);
+	 }
+	 });
+ }
+ else
+ {
+ $.each($('#select-users').selectize()[0].selectize.getValue(), function(ix,it)
+	 {
+	 if(it !='1'){
+	 count++;
+	 }
+	 });
+ 
+  $.each($('#select-users').selectize()[0].selectize.getValue(), function(ix,it)
+	 {
+	 if(it !='1'){
+	 users = [];
+	 users.push(it);
+	
+	 {!JSENCODE(dotPrefix)}AuditAccessControl.getObjectPerms(users, objects, accesstypes, handleAuditByUsers);	  
+	 
+	 }
+	 });	
+ }
+ 
+
+
+}
+	
+function handleLoginGeosResult(result, event)
+{
+	try  
+{
+		if(event.status && result != null){
+		createUserLoginGeos(result);
+		
+		}
+		}catch(ex)
+		{
+			console.log(ex);
+		}
+}
+	
+function handleAuditByUsers(result, event)
+{
+try  
+{
+		if(event.status && result != null){
+		var userid;
+		its = {}
+		$.each(result, function(inx,it){
+		$.each(it.Assignments, function(xindex,xitem){
+		$.each(usersresult, function(indx,itm){
+		if(xitem.AssigneeId == itm.Id )
+		{	
+			userid = itm.Id;
+			its['Id'] = itm.Id;
+                its['Name'] =  itm.Name;
+                its['smallphotourl'] = itm.SmallPhotoUrl;
+                its['email'] = itm.Email;
+                //its['profile'] = itm.Profile.Name;
+                //its['role'] = itm.UserRole.Name;
+                its['PermissionsViewEncryptedData'] = it.PermissionsViewEncryptedData;
+                its['PermissionsViewAllUsers'] = it.PermissionsViewAllUsers;
+                its['PermissionsViewAllData'] = it.PermissionsViewAllData;
+                its['PermissionsManageUsers'] = it.PermissionsManageUsers;
+                its['PermissionsManageUnlistedGroups'] = it.PermissionsManageUnlistedGroups;
+                its['objectinfo'] = [];
+                return false;
+		}
+		});
+		its['PermissionsViewEncryptedData'] = its['PermissionsViewEncryptedData'] | it.PermissionsViewEncryptedData;
+		its['PermissionsViewAllUsers'] = its['PermissionsViewAllUsers'] | it.PermissionsViewAllUsers;
+		its['PermissionsViewAllData'] = its['PermissionsViewAllData'] | it.PermissionsViewAllData;
+		its['PermissionsManageUsers'] = its['PermissionsManageUsers'] | it.PermissionsManageUsers;
+		its['PermissionsManageUnlistedGroups'] = its['PermissionsManageUnlistedGroups'] | it.PermissionsManageUnlistedGroups;
+		  			
+		});
+		
+		});
+
+
+		$.each(result, function(inx,it){
+		var foundobject = false;
+		$.each(it.ObjectPerms, function(oindex,oitem){
+		var duplicates = objectinfo.filter(function(i)
+		{
+			return i.SobjectType === oitem.SobjectType;
+		});
+		
+		if(duplicates.length > 1)
+		{
+			$.each(objectinfo, function(obi, obt)
+			{
+				if(obt.SobjectType == oitem.SobjectType){
+				obt.PermissionsCreate = obt.PermissionsCreate | oitem.PermissionsCreate
+				obt.PermissionsRead = obt.PermissionsRead | oitem.PermissionsRead
+				obt.PermissionsEdit = obt.PermissionsEdit | oitem.PermissionsEdit
+				obt.PermissionsDelete = obt.PermissionsDelete | oitem.PermissionsDelete
+				return false;
+			}
+			});
+		}else{
+		ots = {}
+		ots['userid'] = userid;
+		ots['SobjectType'] = oitem.SobjectType;
+		ots[PermissionsCreate] = oitem.PermissionsCreate;
+		ots[PermissionsRead] = oitem.PermissionsRead;
+		ots[PermissionsEdit] = oitem.PermissionsEdit;
+		ots[PermissionsDelete] = oitem.PermissionsDelete;
+		ots[PermissionsViewAllRecords] = oitem.PermissionsViewAllRecords;
+		ots[PermissionsModifyAllRecords] = oitem.PermissionsModifyAllRecords;
+		ots['FieldPerms'] = [];
+		objectinfo.push(ots);
+		}
+		});
+		
+		if(it.FieldPerms){
+		$.each(objectinfo, function(obi, obt)
+		{
+		var dduplicates = it.FieldPerms.filter(function(i)
+		{
+			return i.SobjectType === obt.SobjectType;
+		});
+		obt.FieldPerms.push.apply(obt.FieldPerms, dduplicates);
+		});
+		}
+	
+		});
+		
+		its.objectinfo = objectinfo;
+		total_access.push(its);	
+		--count;
+		
+		if(count == 0)
+		{
+		process([],[]);
+	  	process(total_access, usersresult);
+		$("#btnExport3").css("display", "block");
+		}
+				
+	}
+	}
+	catch (ex)
+	{
+		console.log(ex);
+	}
+objectinfo = [];
+}
+
+
+
+function handleObjectsResult(result, event)
+        {
+      try
+        {
+		if(event.status && result != null){
+	        item = {}
+			item['SobjectType'] = '1';
+			item['SobjectType'] = 'All Objects';
+		   	result.push(item);
+	    	var $select = $('#select-objects').selectize({
+	    	maxItems: null,
+	    	valueField: 'SobjectType',
+	    	labelField: 'SobjectType',
+	    	searchField: 'SobjectType',
+	    	options: result, 
+	    	create: false
+		});}
+	        }catch(ex)
+	        {
+	        	console.log(ex);
+	        }
+        }
+
+function createProfileChart()
+{
+var dt =[];
+var bgColor = [];
+var lbls = [];
+$.each(usersresult, function(index, item)
+{
+	var dduplicates = usersresult.filter(function(i)
+		{
+			return i.Profile.Name === item.Profile.Name;
+		});	
+		
+		if(dduplicates.length > 0)
+		{ 
+			var ndups = lbls.filter(function(x)
+			{
+				return x === item.Profile.Name;
+			});
+			if(ndups.length == 0){
+			dt.push(dduplicates.length);
+			bgColor.push(getRandomColor());
+			lbls.push(item.Profile.Name);
+			}
+		}
+		
+		
+});
+	generateChart('User by Profiles','prf', dt, bgColor,lbls);
+	return;	
+}  
+  
+function createDupeChart()
+{
+var dt =[];
+var bgColor = [];
+var lbls = [];
+
+$.each(usersresult, function(index, item)
+{
+	var dduplicates = usersresult.filter(function(i)
+	{
+			return i.Email === item.Email;
+	});		
+		if(dduplicates.length > 1)
+		{ 
+			var ndups = lbls.filter(function(x)
+			{
+				return x === item.Email;
+			});
+			if(ndups.length == 0){
+			dt.push(Math.round((dduplicates.length)));//usersresult.length)*100));
+			bgColor.push(getRandomColor());
+			lbls.push(item.Email);
+			}
+		}
+		
+		
+});
+generateChart('Duplicate Users by E-mail','dups', dt, bgColor,lbls);
+
+	return;		
+
+}
+
+function createUserLoginGeos(res)
+{
+	var dt =[];
+var bgColor = [];
+var lbls = [];
+
+$.each(res, function(index, item)
+{
+	var dduplicates = res.filter(function(i)
+	{
+			return i.Subdivision === item.Subdivision && i.Country === item.Country;
+	});		
+		if(dduplicates.length > 1)
+		{ 
+			var ndups = lbls.filter(function(x)
+			{
+				return x === item.Subdivision + ', '+ item.Country;
+			});
+			if(ndups.length == 0){
+			dt.push(Math.round((dduplicates.length)));//usersresult.length)*100));
+			bgColor.push(getRandomColor());
+			lbls.push(item.Subdivision + ', '+ item.Country);
+			}
+		}
+	
+});
+generateChart('Users Logins by Location (Last 30 Days)','logingeos', dt, bgColor,lbls);
+
+	return;
+}
+  
+function getRandomColor() {
+  var letters = '0123456789ABCDEF';
+  var color = '#';
+  for (var i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+  
+
+function handleUsersResult(result, event)
+        {
+      try
+        {
+		if(event.status && result != null){
+			usersresult = result;
+			createProfileChart(); 
+			createDupeChart();
+	        item = {}
+			item['Id'] = '1';
+			item['Name'] = 'All Users';
+			item['Username'] = 'All Users'; 			
+		   	result.push(item);
+		   	var $select = $('#select-users').selectize({
+	    	maxItems: null,
+	    	valueField: 'Id',
+	    	labelField: 'Name',
+	    	searchField: 'Name',
+	    	options: result, 
+	    	create: false
+		});}
+	        }catch(ex)
+	        {
+	        	console.log(ex);
+	        }
+        }
+              
+
+function handleduplicateUsersResult(result, event)
+        {
+        try
+        {
+	        if(event.status && result != null){
+	        }
+	        }catch(ex)
+	        {
+	        	console.log(ex);
+	        }
+        }
+        
+
+
+function generateAccessTypes()
+{
+
+ try
+        {
+        var result=[];
+	        item = {}
+			item['Id'] = '1';
+			item['Name'] = 'All Access Types';
+		   	result.push(item);
+		   	item = {}
+			item['Id'] = '2';
+			item['Name'] = 'Object Level Access (Create Read Edit Delete)';
+			result.push(item);
+			item = {}
+			item['Id'] = '3';
+			item['Name'] = 'Field Level Access (FLS)';
+			result.push(item);
+
+		   	var $select = $('#select-accesstype').selectize({
+	    	maxItems: null,
+	    	valueField: 'Id',
+	    	labelField: 'Name',
+	    	searchField: 'Name',
+	    	options: result, 
+	    	create: false
+		});
+	        }catch(ex)
+	        {
+	        	console.log(ex);
+	        }
+
+}
+
+</script>
+ <div id="results">
+
+
+
+  
+
+
+       </div> 
+
+<script>    
+
+function process(results, users) {
+
+    $("#jsGrid").jsGrid({
+        height: "auto",
+        width: "100%",
+        autoload: true,
+        paging: true,
+        controller: {
+            loadData: function() {
+                return results;
+            }
+        }, 
+        rowRenderer: function(item) {
+            var user = item;
+
+            	var $photo;
+			    $photo = $("<div>").addClass("client-photo").append($("<img>").attr("src", item.smallphotourl));
+				 var $info = $("<table>").addClass("objecttable")
+                .append($("<tr>")
+                .append($("<td>").append($("<h1>").text(item.Name))))
+                .append($("<tr>")
+                .append($("<td>").append($("<h2>").text(item.email))))
+              //  .append($("<tr>")
+              //  .append($("<td>").append($("<h2>").text(item.role))))
+              //  .append($("<tr>")
+              //  .append($("<td>").append($("<h2>").text(item.profile))))
+                .append($("<tr>")
+                .append($("<td>").append($("<h3>").text("View Encrypted Data")))
+                .append($("<td>").append($("<i>").addClass(getPermissionCss(item.PermissionsViewEncryptedData)).text(Boolean(item.PermissionsViewEncryptedData)))))
+				.append($("<tr>")
+                .append($("<td>").append($("<h3>").text("Permission View All Users")))
+                .append($("<td>").append($("<i>").addClass(getPermissionCss(item.PermissionsViewAllUsers)).text(Boolean(item.PermissionsViewAllUsers)))))
+				.append($("<tr>")
+                .append($("<td>").append($("<h3>").text("Permission View All Data")))
+                .append($("<td>").append($("<i>").addClass(getPermissionCss(item.PermissionsViewAllData)).text(Boolean(item.PermissionsViewAllData)))))
+				.append($("<tr>")
+                .append($("<td>").append($("<h3>").text("Manage All Users")))
+                .append($("<td>").append($("<i>").addClass(getPermissionCss(item.PermissionsManageUsers)).text(Boolean(item.PermissionsManageUsers)))));
+				var $object = document.createElement('table');
+				$object.className = 'permstable';
+				var object = document.createDocumentFragment();
+				
+				$.each(item.objectinfo, function(indx, itm)
+				{
+				var $vtobject = $("<tr>").append($("<th>").text("Object Permissions"))
+				.append($("<th>").text("Read"))
+				.append($("<th>").text("Create"))
+				.append($("<th>").text("Edit"))
+				.append($("<th>").text("Delete"))
+				.append($("<th>").text("View All"))
+				.append($("<th>").text("Modify All"));
+	
+				var $tobject = $("<tr>")
+                .append($("<td>").append($("<strong>").text(itm.SobjectType)))
+				.append($("<td>").append($("<i>").addClass(getPermissionCss(itm.PermissionsRead)).text(Boolean(itm.PermissionsRead))))
+                .append($("<td>").append($("<i>").addClass(getPermissionCss(itm.PermissionsCreate)).text(Boolean(itm.PermissionsCreate))))
+                .append($("<td>").append($("<i>").addClass(getPermissionCss(itm.PermissionsEdit)).text(Boolean(itm.PermissionsEdit))))
+				.append($("<td>").append($("<i>").addClass(getPermissionCss(itm.PermissionsDelete)).text(Boolean(itm.PermissionsDelete))))
+				.append($("<td>").append($("<i>").addClass(getPermissionCss(itm.PermissionsViewAllRecords)).text(Boolean(itm.PermissionsViewAllRecords))))
+				.append($("<td>").append($("<i>").addClass(getPermissionCss(itm.PermissionsModifyAllRecords)).text(Boolean(itm.PermissionsModifyAllRecords))));
+
+				$object = $($object).append($vtobject);
+				$object =  $($object).append($tobject);
+				
+				var $vfobject = $("<tr>").append($("<th>").css('width', '220px').text("Field Permissions"))
+				.append($("<th>").css('width', '40px').text("Read"))
+				.append($("<th>").css('width', '40px').text("Edit"));
+				$object =  $($object).append($("<tr>").append($('<td>').append($vfobject)));
+				var founddduplicates = [];
+				$.each(itm.FieldPerms, function(ind,it)
+					{
+					var readpermission = false;
+					var editpermission = false;
+					var dduplicates = itm.FieldPerms.filter(function(i)
+					{
+						return i.Field === it.Field;
+					});			
+					if(dduplicates.length>0)
+					{
+						$.each(dduplicates, function(i, t){
+						readpermission = readpermission | t.PermissionsRead;
+						editpermission = editpermission | t.PermissionsEdit;
+						});
+						
+					}
+					var ndups = founddduplicates.filter(function(i)
+					{
+						return i === it.Field;
+					});	
+					
+				if(ndups.length == 0){		
+				var $fieldPerms = $("<tr>").addClass("perms-info")
+                .append($("<td>").css('width', '226px').append($("<strong>").text(it.Field.substring(it.Field.indexOf('.')+1,it.Field.length))))
+                .append($("<td>").css('width', '50px').append($("<i>").addClass(getPermissionCss(readpermission)).text(Boolean(readpermission))))
+                .append($("<td>").css('width', '50px').append($("<i>").addClass(getPermissionCss(editpermission)).text(Boolean(editpermission))));
+                
+                $object =  $($object).append($("<tr>").append($('<td>').append($fieldPerms)));
+				}
+				
+				$.each(dduplicates, function(i, t){
+				founddduplicates.push(t.Field);		
+						});
+				
+				});
+					$.each(itm.FieldPerms, function(ind,it)
+					{
+					
+					var dduplicates = itm.FieldPerms.filter(function(i)
+					{
+						return i.Field === it.Field;
+					});
+					if(dduplicates.length >0)
+					{
+						
+					}else{
+		
+				var $fieldPerms = $("<tr>").addClass("perms-info")
+				.append($("<td>").css('width', '226px').append($("<strong>").text(it.Field.substring(it.Field.indexOf('.')+1,it.Field.length))))                
+				.append($("<td>").append($("<i>").addClass(getPermissionCss(it.PermissionsRead)).text(Boolean(readpermission))))
+                .append($("<td>").append($("<i>").addClass(getPermissionCss(it.PermissionsEdit)).text(Boolean(editpermission))));
+                $object =  $($object).append($("<tr>").append($('<td>').append($fieldPerms)));
+                }
+				});
+				});	
+            return $("<tr>").append($("<td>").addClass('photo').append($photo)).append($info).append($object);
+        }, 
+        pageSize: 10
+        
+    });
+ 
+ 
+   
+ 
+}
+
+
+function getPermissionCss(value)
+{
+if(value)
+{
+	return 'fa fa-check icon-green';
+}
+else{
+return 'fa fa-times icon-black';
+}
+}
+</script>
+
+<script>
+    var randomScalingFactor = function() {
+        return Math.round(Math.random() * 100);
+    };
+//generateChart('','','', '','');
+function generateChart(chartname,divname, dt, bgColor,lbls){
+
+    var config = {
+        type: 'doughnut',
+        data: {
+            datasets: [{
+                data: dt,
+                backgroundColor: bgColor,
+                label: 'Dataset 1'
+            }],
+            labels: lbls
+        },
+        options: {
+        	cutoutPercentage: 85,
+            responsive: true,
+            legend: {
+                position: 'top',
+            },
+            title: {
+                display: true,
+                text: chartname
+            },
+            animation: {
+                animateScale: true,
+                animateRotate: true
+            }
+        }
+    };
+        var ctx = document.getElementById(divname).getContext("2d");
+        window.myDoughnut = new Chart(ctx, config);
+
+	
+       }
+       
+       
+     
+   
+       
+       
+     $(document).ready(function() {
+$("#btnExport3").click(function(e) {
+
+    var a = document.createElement('a');
+    //getting data from our div that contains the HTML table
+    var data_type = 'data:application/vnd.ms-excel';
+    var table_div = document.getElementById('jsGrid');
+    var table_html = table_div.outerHTML.replace(/ /g, '%20');
+    a.href = data_type + ', ' + table_html;
+    //setting the file name
+    a.download = 'download.xlsx';
+    //triggering the function
+    a.click();
+    //just in case, prevent default behaviour
+    e.preventDefault();
+});
+});
+       
+    </script>
+
+  </apex:form>
+  
+  
+<!-- End Default Content REMOVE THIS -->
+</apex:page>

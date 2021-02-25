@@ -1,0 +1,102 @@
+<apex:page showheader="false" sidebar="false" >
+<apex:includeScript value="{!$Resource.s4jquery}"/>
+<apex:includeScript value="{!$Resource.s4jquerytimer}"/>
+<apex:includeScript value="{!$Resource.s4globals}"/>
+    
+
+<apex:includeScript value="{!$Site.BaseUrl}/lightning/lightning.out.js?v=2"/> 
+<b><apex:includeLightning /></b>
+<div id="lightning" ></div> 
+
+<div id="loader" style="width:200px; margin:0 auto;">
+<canvas id="circularLoader" width="200" height="200"></canvas>
+</div>
+<div id="success" style="text-align:center; color:#ea4b08; font-family:'Helvetica';font-size:20px;">Testing - Do not close this window.</div>
+<div id="loader">
+</div>
+<div style="width:330px; font-family:Segoe UI; margin:auto;">
+                
+                <div style="width:100%; float:left; padding-left:5px;">
+                <div class="abortbutton" onclick="Pausescan();">Pause</div>
+                <div class="startscanbutton" onclick="ResumeScan();">Resume</div>
+                <div class="abortbutton1" onclick="Stopscan();">Stop</div>
+                
+                
+                </div>
+                </div>
+
+
+<style>
+div.startscanbutton
+{
+background-color:#207b0c;
+float:left; 
+font: ProximaNovaRegular,Arial,sans-serif;; 
+position: relative; 
+width: 105px; 
+height: 40px; 
+padding: 0; 
+font-size: 22px; 
+color: white; 
+text-align: center; 
+text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); 
+border:solid 1px;
+cursor: pointer;
+}
+div.startscanbutton:hover
+{
+background-color:#1c9c00;
+}
+
+div.abortbutton
+{
+float:left; 
+font: Segoe UI; 
+width: 105px; 
+height: 40px; 
+padding: 0; 
+font-size: 22px; 
+color: white; 
+text-align:center; 
+text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); 
+border: solid 1px; 
+cursor: pointer;
+background-color:#878e4b;
+}
+div.abortbutton:hover
+{
+background-color: #677114;
+}
+
+div.abortbutton1
+{
+float:left; 
+font: Segoe UI; 
+width: 105px; 
+height: 40px; 
+padding: 0; 
+font-size: 22px; 
+color: white; 
+text-align:center; 
+text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); 
+border: solid 1px; 
+cursor: pointer;
+background-color:#a04242;
+}
+div.abortbutton1:hover
+{
+background-color: #f01d1d;
+}
+</style>
+
+
+<script>
+function hookauraExceptions(){document.getElementById=function(t){console.log("Document.getElementById Called"+t)}}function alert(t){if(timer.stop(),console.log("+ Found XSS "+t+" ..."),""!=auracomponentname){var s=auranamespace+":"+auraapplicationname,e=auranamespace+":"+auracomponentname;return its={},its.exploit="Persistent Cross-site Scripting in lightning component "+auracomponentname,its.variable="NA",its.url=btoa("$Lightning.use("+s+",function(){ $Lightning.createComponent("+e+', {}, "lightning", function(cmp) {});});'),its.file="NA",its.line="NA",its.typed="3",its.code="NA",its.severity="High",vulnerabilities.push(its),vulncount++,sessionStorage.setItem("vulncount",vulncount),void sessionStorage.setItem("vulnerabilities",JSON.stringify(vulnerabilities))}if(""!=currentPersistentXSSURL)return its={},its.exploit="Persistent Cross-site Scripting issue found @ "+currentPersistentXSSURL,its.variable="NA",its.url=btoa(currentPersistentXSSURL),its.file="NA",its.line="NA",its.typed="3",its.code="NA",its.severity="High",vulnerabilities.push(its),vulncount++,sessionStorage.setItem("vulncount",vulncount),void sessionStorage.setItem("vulnerabilities",JSON.stringify(vulnerabilities));var n=0;$.each(xssfunctionalURLs,function(s,e){e.id==t&&(n=1,its={},its.exploit="Cross-site Scripting issue found @ "+e.url+" via variable "+e.variable,its.variable=e.variable,its.url=btoa(e.exploiturl),its.file="NA",its.line="NA",its.typed="3",its.code="NA",its.severity="High",vulnerabilities.push(its),vulncount++,sessionStorage.setItem("vulncount",vulncount))}),0==n&&(its={},its.exploit="Cross-site Scripting issue found @ "+postURL+" via variable "+t,its.variable=t,its.url=btoa(functionalURL),its.file="NA",its.line="NA",its.typed="3",its.code="NA",its.severity="High",vulnerabilities.push(its),vulncount++,sessionStorage.setItem("vulncount",vulncount)),sessionStorage.setItem("vulnerabilities",JSON.stringify(vulnerabilities))}function loadlightningcomponents(t,s,e){var n=t+":"+s,i=t+":"+e,o=t+":lights_out";$Lightning.use(n,function(){$Lightning.createComponent(i,{},"lightning",function(t){$Lightning.createComponent(o,{},"lightning",function(t){})})})}function runnext(){if(exec.stop(),"yes"==scannerrunning&&"yes"==startfuzzing&&"no"==fuzzingcomplete){if("yes"==soqltests){var t,s="no";if($.each(soqlfunctionURLs,function(e,n){if("no"==n.fuzzed)return functionalURL=n.functionalURL,t=n.variable,n.fuzzed="yes",s="yes",!1}),sessionStorage.setItem("soqlfunctionURLs",JSON.stringify(soqlfunctionURLs)),"yes"==s){var e;fuzzcount++,$.ajax({type:"GET",url:functionalURL,async:!1,crossDomain:!0,success:function(s){e=s,html=$.parseHTML(e,document,!1),$.each(html,function(s,e){if("contentWrapper"==e.id)for(var n=e.childNodes,s=0;s<n.length;s++)for(var i=n[s].getElementsByTagName("span"),o=0;o<i.length;o++)if("theErrorPage:theError"==i[o].id&&i[o].innerHTML.match("(mismatched character \'\&lt\;EOF\&gt\;\' expecting \'\'\')"))return its={},its.exploit="SOQL Injection found @ "+functionalURL+" via variable "+t,its.variable=t,its.url=btoa(functionalURL),its.file="NA",its.line="NA",its.typed="1",its.code="NA",its.severity="High",vulnerabilities.push(its),vulncount++,sessionStorage.setItem("vulncount",vulncount),sessionStorage.setItem("vulnerabilities",JSON.stringify(vulnerabilities)),!1})}}),sessionStorage.setItem("soqlfunctionURLs",JSON.stringify(soqlfunctionURLs)),sessionStorage.setItem("fuzzcount",fuzzcount),location.reload()}else"no"==s&&(sessionStorage.setItem("soqltests","no"),sessionStorage.setItem("xsstests","yes"),sessionStorage.setItem("persistentxsstests","no"),location.reload())}else if("yes"==xsstests){var n="",s="no";$.each(xssfunctionalURLs,function(t,e){if("no"==e.fuzzed)return functionalURL=e.functionalURL,postURL=e.url,n=e.variable,e.fuzzed="yes",s="yes",!1}),sessionStorage.setItem("xssfunctionalURLs",JSON.stringify(xssfunctionalURLs)),"yes"==s?(fuzzcount++,$.ajax({type:"GET",url:functionalURL,async:!1,crossDomain:!0,success:function(t){var s=document.createElement("div");s.style.visibility="hidden",s.id="exploitresponse1",document.body.appendChild(s),e=t,"postvariable"==n?$(s).empty().html($("html",t).html()):$(s).empty().html(t),$(s).remove(),sessionStorage.setItem("fuzzcount",fuzzcount),sessionStorage.setItem("xssfunctionalURLs",JSON.stringify(xssfunctionalURLs)),location.reload()}}),sessionStorage.setItem("fuzzcount",fuzzcount),sessionStorage.setItem("xssfunctionalURLs",JSON.stringify(xssfunctionalURLs)),location.reload()):"no"==s&&(sessionStorage.setItem("soqltests","no"),sessionStorage.setItem("xsstests","no"),sessionStorage.setItem("persistentxsstests","yes"),location.reload())}else if("yes"==persistentxsstests){s="no";$.each(persistentxssfunctionalURLs,function(t,e){if("no"==e.fuzzed)return functionalURL=e.functionalURL,e.fuzzed="yes",s="yes",!1}),sessionStorage.setItem("persistentxssfunctionalURLs",JSON.stringify(persistentxssfunctionalURLs)),"yes"==s?(currentPersistentXSSURL=functionalURL,fuzzcount++,$.ajax({type:"GET",url:functionalURL,async:!1,crossDomain:!0,success:function(t){var s=document.createElement("div");s.style.visibility="hidden",s.id="exploitresponse2",document.body.appendChild(s),e=t,$(s).empty().html(e),$(s).remove(),sessionStorage.setItem("fuzzcount",fuzzcount),sessionStorage.setItem("persistentxssfunctionalURLs",JSON.stringify(persistentxssfunctionalURLs)),location.reload()}}),sessionStorage.setItem("fuzzcount",fuzzcount),sessionStorage.setItem("persistentxssfunctionalURLs",JSON.stringify(persistentxssfunctionalURLs)),location.reload()):"no"==s&&(sessionStorage.setItem("soqltests","no"),sessionStorage.setItem("xsstests","no"),sessionStorage.setItem("persistentxsstests","no"),sessionStorage.setItem("auratests","yes"),location.reload())}else if("yes"==auratests){s="no";$.each(aurapersistentxssfunctionalURLs,function(t,e){if("no"==e.fuzzed)return auranamespace=e.namespace,auracomponentname=e.component,auraappurl=e.appurl,e.fuzzed="yes",s="yes",!1}),sessionStorage.setItem("aurapersistentxssfunctionalURLs",JSON.stringify(aurapersistentxssfunctionalURLs)),"yes"==s?(fuzzcount++,sessionStorage.setItem("aurapersistentxssfunctionalURLs",JSON.stringify(aurapersistentxssfunctionalURLs)),sessionStorage.setItem("fuzzcount",fuzzcount),loadlightningcomponents(auranamespace,auraapplicationname,auracomponentname)):"no"==s&&(sessionStorage.setItem("soqltests","no"),sessionStorage.setItem("xsstests","no"),sessionStorage.setItem("persistentxsstests","no"),sessionStorage.setItem("auratests","no"),sessionStorage.setItem("fuzzingcomplete","yes"),document.location.href="{!$Page.SecurityScan}")}}else ocument.location.href="{!$Page.SecurityScan}"}function Pausescan(){document.getElementById("success").innerText="Scan Paused ...",exec.stop(),timer.stop(),window.stop()}function Stopscan(){document.getElementById("success").innerText="Scan Stoped ...",sessionStorage.setItem("abort","yes"),document.location.href="{!$Page.SecurityScan}"}function ResumeScan(){document.getElementById("success").innerText="Fuzzing ... do not close this window",location.reload()}var fuzzcount=parseInt(sessionStorage.getItem("fuzzcount")),fuzzcountlimit=parseInt(sessionStorage.getItem("fuzzcountlimit")),ctx=document.getElementById("circularLoader").getContext("2d"),al=0;al=(fuzzcount/fuzzcountlimit*100).toFixed(1);var start=4.72,cw=ctx.canvas.width,ch=ctx.canvas.height,diff;diff=(al/100*Math.PI*2*10).toFixed(2),ctx.clearRect(0,0,cw,ch),ctx.lineWidth=17,al>75?(ctx.fillStyle="#207b0c",ctx.strokeStyle="#207b0c"):al>50?(ctx.fillStyle="#136498",ctx.strokeStyle="#136498"):al>25?(ctx.fillStyle="#919c06",ctx.strokeStyle="#919c06"):(ctx.fillStyle="#ea4b08",ctx.strokeStyle="#ea4b08"),ctx.textAlign="center",ctx.font="30px Helvetica",ctx.fillText(al+"%",.52*cw,.5*ch+5,cw+12),ctx.beginPath(),ctx.arc(100,100,75,start,diff/10+start,!1),ctx.stroke();var vulnerabilities=$.parseJSON(sessionStorage.getItem("vulnerabilities")),xssfunctionalURLs=$.parseJSON(sessionStorage.getItem("xssfunctionalURLs")),soqlfunctionURLs=$.parseJSON(sessionStorage.getItem("soqlfunctionURLs")),persistentxssfunctionalURLs=$.parseJSON(sessionStorage.getItem("persistentxssfunctionalURLs")),aurapersistentxssfunctionalURLs=$.parseJSON(sessionStorage.getItem("aurapersistentxssfunctionalURLs")),scannerrunning=sessionStorage.getItem("scannerrunning"),startfuzzing=sessionStorage.getItem("startfuzzing"),fuzzingcomplete=sessionStorage.getItem("fuzzingcomplete"),soqltests=sessionStorage.getItem("soqltests"),xsstests=sessionStorage.getItem("xsstests"),persistentxsstests=sessionStorage.getItem("persistentxsstests"),auratests=sessionStorage.getItem("auratests"),functionalURL,postURL,auranamespace,auraappurl,auracomponentname="",auraapplicationname="securityfuzzer",vulncount=parseInt(sessionStorage.getItem("vulncount")),currentPersistentXSSURL="";window.blur(),$.ajaxSetup({cache:!0});var timer=$.timer(function(){location.reload()});timer.set({time:48e3,autostart:!0});var exec=$.timer(function(){runnext()});exec.set({time:200,autostart:!0}),window.onerror=function(){return sessionStorage.setItem("persistentxssfunctionalURLs",JSON.stringify(persistentxssfunctionalURLs)),sessionStorage.setItem("xssfunctionalURLs",JSON.stringify(xssfunctionalURLs)),sessionStorage.setItem("soqlfunctionURLs",JSON.stringify(soqlfunctionURLs)),location.reload(),!0},fuzzcount>=fuzzcountlimit&&(sessionStorage.setItem("soqltests","no"),sessionStorage.setItem("xsstests","no"),sessionStorage.setItem("persistentxsstests","no"),sessionStorage.setItem("auratests","no"),sessionStorage.setItem("fuzzingcomplete","yes"),document.location.href="{!$Page.SecurityScan}");
+
+
+</script>
+<apex:form id="form" >
+
+</apex:form>
+
+</apex:page>

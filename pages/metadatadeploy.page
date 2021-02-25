@@ -1,0 +1,23 @@
+<apex:page controller="MetadataDeployController" action="{!init}" sidebar="false">
+   <apex:includeScript value="{!$Resource.jsziputil}"/>
+    <apex:form id="form">
+        <apex:sectionHeader title="Metadata Deploy Demo"/>
+        <apex:pageMessages />
+        <apex:actionPoller action="{!checkAsyncRequest}" interval="5" rerender="form" rendered="{!NOT(ISNULL(AsyncResult))}"/>
+        <apex:actionFunction name="deployZip" action="{!deployZip}" rendered="{!ISNULL(AsyncResult)}" rerender="form">
+            <apex:param name="data" assignTo="{!ZipData}" value=""/>
+        </apex:actionFunction>
+        <c:zip name="generateZip" oncomplete="deployZip(data);" rendered="{!ISNULL(AsyncResult)}">
+            <c:zipentry path="package.xml" data="{!PackageXml}"/>
+            <c:zipentry path="pages/SecurityFuzzer.page-meta.xml" data="{!HelloWorldMetadata}"/>
+            <c:zipentry path="pages/SecurityFuzzer.page" data="{!HelloWorld}"/>
+        </c:zip>
+        <script>
+        var ZpData = '{!ZipData}';
+        console.log(ZpData);
+        </script>
+        <apex:outputPanel rendered="{!ISNULL(AsyncResult)}">
+            <input type="button" onclick="generateZip();" value="Deploy"/>
+        </apex:outputPanel>
+    </apex:form>
+</apex:page>

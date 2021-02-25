@@ -1,0 +1,4 @@
+<aura:component >
+	<b>LIGHTS OUT!</b>
+    <aura:handler name="init" action="{!c.myAction}" value="{!this}" />
+</aura:component>

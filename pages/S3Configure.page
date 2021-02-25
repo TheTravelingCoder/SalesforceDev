@@ -1,0 +1,87 @@
+<apex:page controller="MetadataDeployController" action="{!init}">
+<apex:includeScript value="{!$Resource.jquery}"/>
+<style>
+#overlay-back {
+    position   : absolute;
+    top        : 0;
+    left       : 0;
+    width      : 100%;
+    height     : 100%;
+    background : #000;
+    opacity    : 0.6;
+    filter     : alpha(opacity=60);
+    z-index    : 5;
+    display    : none;
+}
+
+#overlay {
+    position : absolute;
+    top      : 0;
+    left     : 0;
+    width    : 100%;
+    height   : 100%;
+    z-index  : 10;
+    display  : none;
+} 
+
+</style>
+
+<apex:form id="form">
+        <apex:sectionHeader title="Configuring Salesforce Security Scanner"/>
+        <apex:pageMessages />
+        <apex:actionPoller action="{!checkAsyncRequest}" interval="10" rerender="form" rendered="{!NOT(ISNULL(AsyncResult))}"/>
+     </apex:form>
+
+<div id="overlay-back"></div>
+<div id="overlay">
+<div id="basicModalContent" name="basicModalContent" style=" display:block; position:absolute; /* width: 65%; */ height: auto; background-color: rgba(253, 253, 253, 0.98); z-index: 400; margin-top: 80px; margin-left:250px">
+<a href="#" id="modalclose" style="position:relative; float: right;font-family: 'Segoe UI' sans-serif;font-size: 16px;padding-right: 7px;font-weight: 700;/* border: 1px solid maroon; */text-decoration: none;color: #837F7F;" onclick="javascript:$('#overlay,#overlay-back').fadeOut(1000); document.location.href=document.location.href;" onmouseover="this.style.color='#000';" onmouseout="this.style.color='#837F7F';">x</a>
+<div style="margin: 50px;opacity: 9.9; /* background-color: #c0c0c0; */ width: 90%;display: block;color: #888484;font-family: 'Segoe UI' sans-serif;font-size: 16px;font-weight: 600;">
+ <div style="border-bottom:1px solid #aaa0a0;">
+  <h2>Two additional steps required to configure the security scanner ...</h2><br></br><br></br>
+  </div>
+<div style="float:left; width:320px; padding:10px; border-right:1px solid #ccc; margin:10px;">
+ 
+  <h1 style="text-align:center; color: #000;float: left;margin-left: 100px;"> Step 1 </h1><br></br>
+Go to <a href="/0rp/e?retURL=" target="_blank" style="
+    text-decoration: none; color:#2687E8;
+">Setup &gt; Security Controls &gt; Remote site settings</a><br></br><br></br>
+  <span style="color: #000;">1.</span> Type any name in "Remote Site Name"<br></br>
+  <span style="color: #000;">2.</span> <div id="remoteurl"></div> 
+  <span style="color: #000;">3.</span> Click on "Save"<br></br><br></br>
+
+  These steps are shown in the following figure: <br></br><br></br>
+<img src="{!$Resource.mdapiremote}" style="border: 2px solid #888;width: 280px;"> </img>
+</div><div style="float:left; width:320px; padding:10px; margin:10px;">
+  <h3 style="text-align:center; color: #000;float: left;margin-left: 100px;">Step 2</h3><br></br>
+  Go to <a href="/_ui/system/security/SessionSettings" target="_blank" style="
+    text-decoration: none; color:#2687E8;
+">Setup &gt; Security Controls &gt; Session Settings</a><br></br><br></br>
+  <span style="color: #000;">1.</span> Uncheck "Lock sessions to the IP address from which they originated"<br></br>
+  <span style="color: #000;">2.</span> Uncheck "Lock sessions to the domain in which they were first used"<br></br> 
+  <span style="color: #000;">3.</span> Click on "Save"<br></br><br></br>
+    These steps are shown in the following figure: <br></br><br></br>
+<img src="{!$Resource.securitysettings}" style="border: 2px solid #888;width: 280px;"> </img>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+var RemoteSiteError="{!JSENCODE(RemoteSiteError)}";
+         var baseSFURL="{!JSENCODE(baseSFURL)}";
+         document.getElementById("remoteurl").innerText="Copy & Paste " + baseSFURL + ' in "Remote Site URL"';
+         
+         if(RemoteSiteError != "0")
+         {
+         $('#overlay, #overlay-back').fadeIn(500);
+         }else if(RemoteSiteError =="1")
+         {
+         document.location.href= baseSFURL+"/apex/SecurityScan";
+         }
+         
+         
+
+</script>
+
+</apex:page>
