@@ -128,4 +128,12 @@
         <name>copado__Copado_Selenium_Testing</name>
         <type>CustomApplication</type>
     </appMenuItems>
+    <appMenuItems>
+        <name>S4</name>
+        <type>ConnectedApp</type>
+    </appMenuItems>
+    <appMenuItems>
+        <name>s4Test2</name>
+        <type>ConnectedApp</type>
+    </appMenuItems>
 </AppMenu>
