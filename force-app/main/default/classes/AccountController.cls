@@ -4,6 +4,8 @@ public with sharing class AccountController {
     public static List<Account> getAccountList() {
         return [SELECT Id, Name FROM Account LIMIT 10];
     }
+    
+    
 
     @AuraEnabled(cacheable=true)
     public static Account getSingleAccount() {
