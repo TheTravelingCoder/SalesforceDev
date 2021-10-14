@@ -4,7 +4,7 @@
     <script>
 window.onerror = function(message, url, lineNumber) {  
         console.log('Yup' + message + url + lineNumber);
-return true;
+//return true;
 };  
 (function(){
     var oldLog = console.error;
