@@ -52,8 +52,8 @@
                     >View Source</a
                 ></p
             >
-            <ltng:require scripts="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.2.3/jquery.min.js"></ltng:require>
-            <ltng:require scripts="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.js"></ltng:require>
+            //<ltng:require scripts="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.2.3/jquery.min.js"></ltng:require>
+            //<ltng:require scripts="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.js"></ltng:require>
 
         </div>
     </lightning:card>
